@@ -1,0 +1,12 @@
+{
+  "name": "mh-captures-media",
+  "version": "1.0.0",
+  "description": "MH Captures/Media photography booking website",
+  "private": true,
+  "dependencies": {
+    "stripe": "^14.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
