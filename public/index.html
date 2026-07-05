@@ -1075,6 +1075,7 @@
     const message = document.getElementById('inq-message').value.trim();
     const errDiv = document.getElementById('inq-error');
     const successDiv = document.getElementById('inq-success');
+    const btn = document.getElementById('inq-btn');
 
     errDiv.style.display = 'none';
     successDiv.style.display = 'none';
@@ -1091,21 +1092,41 @@
     }
 
     const name = [first, last].filter(Boolean).join(' ');
-    const subjectLine = subject ? `MH Captures/Media Inquiry — ${subject}` : 'MH Captures/Media — New Inquiry';
-    const body = `Name: ${name}\nEmail: ${email}\nSubject: ${subject || 'N/A'}\n\nMessage:\n${message}`;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
 
-    const mailtoLink = `mailto:mhmedia@mhcapturesmedia.com?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoLink;
-
-    // Show success after short delay
-    setTimeout(() => {
-      successDiv.style.display = 'block';
-      document.getElementById('inq-first').value = '';
-      document.getElementById('inq-last').value = '';
-      document.getElementById('inq-email').value = '';
-      document.getElementById('inq-subject').value = '';
-      document.getElementById('inq-message').value = '';
-    }, 800);
+    fetch('https://formspree.io/f/mzdlojol', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email,
+        subject: subject || 'General inquiry',
+        message,
+      }),
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.ok) {
+        successDiv.style.display = 'block';
+        document.getElementById('inq-first').value = '';
+        document.getElementById('inq-last').value = '';
+        document.getElementById('inq-email').value = '';
+        document.getElementById('inq-subject').value = '';
+        document.getElementById('inq-message').value = '';
+      } else {
+        errDiv.textContent = 'Something went wrong. Please try again or email us directly.';
+        errDiv.style.display = 'block';
+      }
+    })
+    .catch(() => {
+      errDiv.textContent = 'Network error. Please check your connection and try again.';
+      errDiv.style.display = 'block';
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = 'Send message →';
+    });
   }
 
   /* ── STRIPE INTEGRATION ── */
