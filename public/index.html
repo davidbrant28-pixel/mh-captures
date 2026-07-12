@@ -773,11 +773,12 @@
     <div class="booking-info">
       <h3>Reserve your<br><em>session</em></h3>
       <p>Fill out the form and we'll confirm your booking within 24 hours. A 30% deposit is required to secure your date.</p>
-      <ul class="include-list">
-        <li><span class="icon">✓</span> Pre-session consultation call</li>
-        <li><span class="icon">✓</span> Private online gallery</li>
-        <li><span class="icon">✓</span> High-res downloads included</li>
-        <li><span class="icon">✓</span> 48-hour delivery guarantee</li>
+      <ul class="include-list" id="pkg-includes">
+        <li><span class="icon">✓</span> 30 min session</li>
+        <li><span class="icon">✓</span> 10–15 edited photos</li>
+        <li><span class="icon">✓</span> One location</li>
+        <li><span class="icon">✓</span> High-res downloads</li>
+        <li><span class="icon">✓</span> Private gallery</li>
       </ul>
     </div>
     <div class="booking-form">
@@ -1016,10 +1017,41 @@
     updateSummary();
   }
 
+  const pkgDetails = {
+    0: [
+      '30 min session',
+      '10–15 edited photos',
+      'One location',
+      'High-res downloads',
+      'Private gallery',
+    ],
+    150: [
+      '1 hour session',
+      '20–30 edited photos',
+      'Up to 2 locations',
+      'High-res downloads',
+      'Private gallery',
+      'Pre-session consultation',
+    ],
+    350: [
+      '2 hour session',
+      '40–50 edited photos',
+      'Multiple locations',
+      'High-res downloads',
+      'Private gallery',
+      'Pre-session consultation',
+      'Priority 24hr delivery',
+      'Outfit change included',
+    ],
+  };
+
   function selectPkg(btn, add) {
     document.querySelectorAll('.pkg-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active'); pkgAdd = add;
     updateSummary();
+    // Update include list
+    const list = document.getElementById('pkg-includes');
+    list.innerHTML = pkgDetails[add].map(item => `<li><span class="icon">✓</span> ${item}</li>`).join('');
   }
 
   function updateSummary() {
