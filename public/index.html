@@ -222,15 +222,18 @@
   .rating-sub { font-size: 13px; color: var(--text-sec); }
   .stars { display: flex; gap: 3px; color: var(--text); font-size: 15px; margin-bottom: 4px; }
   .testi-grid {
-    display: grid; grid-template-columns: 1fr;
+    display: grid; grid-template-columns: 1fr 1fr;
     border: 0.5px solid var(--border); overflow: hidden;
   }
   .testi-card {
-    padding: 1.5rem 1.25rem;
+    padding: 1.25rem 1rem;
+    border-right: 0.5px solid var(--border);
     border-bottom: 0.5px solid var(--border);
     background: #1a1a1a; min-width: 0;
   }
+  .testi-card:nth-child(even) { border-right: none; }
   .testi-card:last-child { border-bottom: none; }
+  .testi-card:nth-last-child(2):nth-child(odd) { border-bottom: none; }
   .quote {
     font-family: 'Cormorant Garamond', serif;
     font-size: 18px; font-weight: 300; font-style: italic;
