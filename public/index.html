@@ -211,6 +211,20 @@
   .port-overlay { position: absolute; inset: 0; }
   .port-label, .port-cat, .port-name { display: none; }
 
+  /* ── REVIEW GRID ── */
+  .review-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    border: 0.5px solid var(--border); margin-top: 2rem; overflow: hidden;
+  }
+  .review-card {
+    padding: 1.25rem 1rem; background: var(--surface);
+    border-right: 0.5px solid var(--border);
+    border-bottom: 0.5px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .review-card:nth-child(even) { border-right: none; }
+  .review-card:nth-child(3) { grid-column: span 2; border-bottom: none; border-right: none; }
+
   /* ── TESTIMONIALS ── */
   #testimonials { background: #111111; border-top: 0.5px solid var(--border); }
   .testi-top { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
@@ -503,6 +517,10 @@
     .port-item:nth-child(5) { grid-column: span 2; aspect-ratio: auto; min-height: 240px; }
     .port-item { aspect-ratio: 1; }
 
+    .review-grid { grid-template-columns: repeat(3,1fr); margin-top: 3rem; }
+    .review-card { padding: 2rem 1.75rem; border-bottom: none; }
+    .review-card:nth-child(3) { grid-column: auto; border-right: none; }
+
     .testi-top { flex-direction: row; align-items: flex-end; }
     .testi-grid { grid-template-columns: repeat(3,1fr); margin-top: 3rem; }
     .testi-card { border-bottom: none; border-right: 0.5px solid var(--border); padding: 2rem 1.75rem; }
@@ -645,21 +663,21 @@
   </div>
   <p style="font-size:15px;color:var(--text-sec);line-height:1.7;max-width:520px;margin-top:1rem;">We're just getting started and every session matters. If you've worked with MH Captures/Media, we'd love to hear about your experience — it means the world and helps others find us.</p>
 
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);border:.5px solid var(--border);margin-top:3rem;">
+  <div class="review-grid">
 
-    <div style="padding:2rem 1.75rem;border-right:.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:flex-start;gap:1rem;">
+    <div class="review-card">
       <div style="width:44px;height:44px;border-radius:50%;background:#e8f0fe;display:flex;align-items:center;justify-content:center;font-size:22px;">G</div>
       <div>
         <div style="font-size:15px;font-weight:500;color:var(--text);margin-bottom:4px;">Leave a Google review</div>
         <div style="font-size:13px;color:var(--text-sec);line-height:1.6;">Share your experience on Google Maps to help others discover MH Captures/Media.</div>
       </div>
-      <a href="https://maps.app.goo.gl/k1HsNHeMnjYaHnA69" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:.5px solid var(--border-strong);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;background:transparent;transition:background .15s;" onmouseover="this.style.background='var(--surface-alt)'" onmouseout="this.style.background='transparent'">
+      <a href="https://maps.app.goo.gl/k1HsNHeMnjYaHnA69" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border:.5px solid var(--border-strong);border-radius:var(--radius);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);text-decoration:none;background:transparent;" onmouseover="this.style.background='var(--surface-alt)'" onmouseout="this.style.background='transparent'">
         Write a review &#8599;
       </a>
     </div>
 
-    <div style="padding:2rem 1.75rem;border-right:.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;gap:1rem;">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:300;font-style:italic;line-height:1.6;color:var(--text-sec);">Your review could be the first one here — and the one that convinces someone to book their session.</div>
+    <div class="review-card">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;font-style:italic;line-height:1.6;color:var(--text-sec);">Your review could be the first one here — and the one that convinces someone to book their session.</div>
       <div style="display:flex;gap:4px;margin-top:auto;">
         <span style="font-size:22px;color:var(--border-strong);">&#9733;</span>
         <span style="font-size:22px;color:var(--border-strong);">&#9733;</span>
@@ -669,17 +687,15 @@
       </div>
     </div>
 
-    <div style="padding:2rem 1.75rem;background:var(--surface);display:flex;flex-direction:column;justify-content:space-between;gap:1rem;">
-      <div>
-        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;">Why reviews matter</div>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
-          <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Helps others find MH Captures/Media</li>
-          <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Takes less than 2 minutes</li>
-          <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Supports a local photographer</li>
-          <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Your honest feedback is valued</li>
-        </ul>
-      </div>
-      <a href="https://maps.app.goo.gl/k1HsNHeMnjYaHnA69" target="_blank" style="font-size:12px;color:var(--text-muted);text-decoration:none;">View on Google Maps &#8599;</a>
+    <div class="review-card">
+      <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;">Why reviews matter</div>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;">
+        <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Helps others find MH Captures/Media</li>
+        <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Takes less than 2 minutes</li>
+        <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Supports a local photographer</li>
+        <li style="font-size:13px;color:var(--text-sec);display:flex;align-items:center;gap:8px;"><span style="color:var(--text);">&#10003;</span> Your honest feedback is valued</li>
+      </ul>
+      <a href="https://maps.app.goo.gl/k1HsNHeMnjYaHnA69" target="_blank" style="font-size:12px;color:var(--text-muted);text-decoration:none;margin-top:auto;">View on Google Maps &#8599;</a>
     </div>
 
   </div>
