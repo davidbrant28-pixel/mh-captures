@@ -555,6 +555,29 @@
 <body>
 
 <!-- NAV -->
+<!-- ANNOUNCEMENT BANNERS -->
+<div id="announcement-bar" style="position:sticky;top:0;z-index:101;background:#0a0a0a;border-bottom:0.5px solid rgba(212,175,55,0.3);">
+
+  <div id="banner-1" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 1rem;background:linear-gradient(90deg,#1a1200,#2a1f00,#1a1200);position:relative;">
+    <span style="font-size:16px;">🎉</span>
+    <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#d4af37;text-align:center;">
+      <strong>First-time client?</strong> Your first booking is <strong>completely free</strong> — no deposit needed.
+      <a href="#booking" style="color:#d4af37;font-weight:600;margin-left:8px;text-decoration:underline;">Book now →</a>
+    </span>
+    <button onclick="document.getElementById('banner-1').style.display='none'" style="position:absolute;right:12px;background:transparent;border:none;color:#a08c2a;font-size:18px;cursor:pointer;line-height:1;">×</button>
+  </div>
+
+  <div id="banner-2" style="display:flex;align-items:center;justify-content:center;gap:10px;padding:9px 1rem;background:linear-gradient(90deg,#0d1200,#1a2000,#0d1200);border-top:0.5px solid rgba(212,175,55,0.15);position:relative;">
+    <span style="font-size:16px;">🤝</span>
+    <span style="font-family:'DM Sans',sans-serif;font-size:13px;color:#d4af37;text-align:center;">
+      <strong>Refer a friend</strong> and their first session is <strong>free</strong> — just mention your name when booking.
+      <a href="#inquiries" style="color:#d4af37;font-weight:600;margin-left:8px;text-decoration:underline;">Refer now →</a>
+    </span>
+    <button onclick="document.getElementById('banner-2').style.display='none'" style="position:absolute;right:12px;background:transparent;border:none;color:#a08c2a;font-size:18px;cursor:pointer;line-height:1;">×</button>
+  </div>
+
+</div>
+
 <nav>
   <a href="#" class="nav-logo">MH <span>Captures/Media</span></a>
   <div class="nav-links">
@@ -816,6 +839,79 @@
   </div>
 </section>
 
+<!-- PROMOTIONS -->
+<section id="promotions" style="background:#111111;border-top:0.5px solid rgba(212,175,55,0.15);">
+
+  <!-- Banners -->
+  <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:2.5rem;">
+
+    <div style="background:linear-gradient(135deg,#1a1200,#2a1f00);border:0.5px solid rgba(212,175,55,0.5);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:22px;">🎉</span>
+        <div>
+          <div style="font-size:12px;color:#a08c2a;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">First-Time Client</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#d4af37;font-weight:300;">First booking is <em>completely free</em></div>
+        </div>
+      </div>
+      <a href="#booking" style="white-space:nowrap;background:#d4af37;color:#0a0a0a;padding:9px 20px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;text-decoration:none;">Book free →</a>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#0d1a0d,#0a1a0a);border:0.5px solid rgba(212,175,55,0.5);border-radius:10px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:22px;">🤝</span>
+        <div>
+          <div style="font-size:12px;color:#a08c2a;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px;">Referral Offer</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:#d4af37;font-weight:300;">Refer a friend — <em>they shoot free</em></div>
+        </div>
+      </div>
+      <a href="#inquiries" style="white-space:nowrap;background:#d4af37;color:#0a0a0a;padding:9px 20px;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;text-decoration:none;">Refer now →</a>
+    </div>
+
+  </div>
+
+  <div class="section-header">
+    <p class="eyebrow">Limited offer</p>
+    <h2 class="section-title">Deals & <em>Promotions</em></h2>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-top:1rem;">
+
+    <div style="border:0.5px solid rgba(212,175,55,0.4);border-radius:12px;padding:1.5rem;background:#0a0a0a;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#d4af37,#a08c2a);"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+        <span style="font-size:24px;">🎉</span>
+        <span style="font-size:11px;letter-spacing:0.14em;color:#d4af37;text-transform:uppercase;font-weight:500;">First-Time Client</span>
+      </div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#d4af37;margin-bottom:0.5rem;">First Booking is <em>Free</em></h3>
+      <p style="font-size:14px;color:#c9a227;line-height:1.7;margin-bottom:1.25rem;">New to MH Captures/Media? Your first session is completely free — no deposit, no strings attached. Just show up and let's create something memorable together.</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:1.5rem;">
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> Valid for Portrait or Family sessions</li>
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> No deposit required</li>
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> First-time clients only</li>
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> Mention this offer when booking</li>
+      </ul>
+      <a href="#booking" style="display:inline-block;background:#d4af37;color:#0a0a0a;padding:12px 28px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Claim your free session →</a>
+    </div>
+
+    <div style="border:0.5px solid rgba(212,175,55,0.4);border-radius:12px;padding:1.5rem;background:#0a0a0a;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#a08c2a,#d4af37);"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+        <span style="font-size:24px;">🤝</span>
+        <span style="font-size:11px;letter-spacing:0.14em;color:#d4af37;text-transform:uppercase;font-weight:500;">Referral Offer</span>
+      </div>
+      <h3 style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:#d4af37;margin-bottom:0.5rem;">Refer a Friend, <em>They Shoot Free</em></h3>
+      <p style="font-size:14px;color:#c9a227;line-height:1.7;margin-bottom:1.25rem;">Know someone who'd love a session? Refer them to MH Captures/Media and their first booking is completely free — our way of saying thank you for spreading the word.</p>
+      <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:1.5rem;">
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> Referred friend gets their first session free</li>
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> No limit on how many friends you refer</li>
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> Friend must mention your name when booking</li>
+        <li style="font-size:13px;color:#c9a227;display:flex;align-items:center;gap:8px;"><span style="color:#d4af37;">✓</span> Valid for Portrait or Family sessions</li>
+      </ul>
+      <a href="#inquiries" style="display:inline-block;background:#d4af37;color:#0a0a0a;padding:12px 28px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;text-decoration:none;transition:opacity .2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Refer a friend →</a>
+    </div>
+
+  </div>
+</section>
+
 <!-- FAQ -->
 <section id="faq">
   <div class="faq-layout">
@@ -917,6 +1013,7 @@
   <div class="footer-links">
     <a href="https://www.instagram.com/mh_captures_media/?hl=en" target="_blank">Instagram</a>
     <a href="#portfolio">Portfolio</a>
+    <a href="#promotions">Promotions</a>
     <a href="#inquiries">Inquiries</a>
     <a href="#faq">FAQ</a>
     <a href="#booking">Contact</a>
