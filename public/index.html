@@ -1174,9 +1174,17 @@
   const STRIPE_PK = 'pk_live_51Rpx4lCkbVdZ1hSqss9b6eld9bqsUSOMnlFS3Xy3HLBG197LSIOhcqlLwxdB9XV7xpP6Ntsbvad0HRGb4VEtphrG00OLg5OV9O';
   let stripe, cardElement, paymentRequest;
 
+  function getDepositCents() {
+    const txt = document.getElementById('pay-deposit')?.textContent || '$30';
+    const val = parseFloat(txt.replace(/[^0-9.]/g, ''));
+    return isNaN(val) ? 3000 : Math.round(val * 100);
+  }
+
   function initStripe() {
     if (typeof Stripe === 'undefined') return;
     stripe = Stripe(STRIPE_PK);
+
+    // Card element
     const elements = stripe.elements({
       appearance: {
         theme: 'night',
@@ -1191,15 +1199,9 @@
         }
       }
     });
-
     cardElement = elements.create('card', {
       style: {
-        base: {
-          color: '#d4af37',
-          fontFamily: '"DM Sans", sans-serif',
-          fontSize: '15px',
-          '::placeholder': { color: '#6b5c1a' },
-        },
+        base: { color: '#d4af37', fontFamily: '"DM Sans", sans-serif', fontSize: '15px', '::placeholder': { color: '#6b5c1a' } },
         invalid: { color: '#e87070' }
       }
     });
@@ -1208,15 +1210,14 @@
       document.getElementById('stripe-card-errors').textContent = e.error ? e.error.message : '';
     });
 
-    // Apple Pay / Google Pay
+    // Google Pay / Apple Pay
     paymentRequest = stripe.paymentRequest({
       country: 'CA',
       currency: 'cad',
-      total: { label: 'MH Captures/Media — Deposit', amount: 3000 },
+      total: { label: 'MH Captures/Media — Deposit', amount: getDepositCents() },
       requestPayerName: true,
       requestPayerEmail: true,
     });
-
     const prElements = stripe.elements();
     const prButton = prElements.create('paymentRequestButton', {
       paymentRequest,
@@ -1235,11 +1236,6 @@
     });
   }
 
-  function getDepositCents() {
-    const txt = document.getElementById('pay-deposit')?.textContent || '$45';
-    return Math.round(parseFloat(txt.replace(/[^0-9.]/g,'')) * 100);
-  }
-
   async function handleStripePayment(e) {
     e.preventDefault();
     const btn = document.getElementById('stripe-pay-btn');
@@ -1252,47 +1248,37 @@
     errDiv.textContent = '';
 
     try {
-      const depositCents = getDepositCents();
       const name = document.getElementById('cardholder-name')?.value?.trim() || '';
       const email = document.querySelector('#booking input[type="email"]')?.value?.trim() || '';
       const session = document.getElementById('pay-session')?.textContent || 'Session';
 
       if (!name) throw new Error('Please enter the name on your card.');
 
-      // Step 1: Call Netlify function to create PaymentIntent
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: depositCents, session, name, email }),
+        body: JSON.stringify({ amount: getDepositCents(), session, name, email }),
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Server error (${res.status}): ${text}`);
-      }
+      if (!res.ok) throw new Error(`Server error (${res.status})`);
 
       const { clientSecret, error: serverError } = await res.json();
       if (serverError) throw new Error(serverError);
-      if (!clientSecret) throw new Error('No client secret returned from server.');
+      if (!clientSecret) throw new Error('No client secret returned.');
 
-      // Step 2: Confirm card payment with Stripe
       const { paymentIntent, error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: { name, email: email || undefined },
-        }
+        payment_method: { card: cardElement, billing_details: { name, email: email || undefined } }
       });
 
       if (stripeError) throw new Error(stripeError.message);
       if (paymentIntent.status === 'succeeded') {
         document.getElementById('successModal').classList.add('show');
       } else {
-        throw new Error(`Unexpected payment status: ${paymentIntent.status}`);
+        throw new Error(`Payment status: ${paymentIntent.status}`);
       }
 
     } catch (err) {
       errDiv.textContent = err.message || 'Payment failed. Please try again.';
-      console.error('Stripe payment error:', err);
     } finally {
       btn.disabled = false;
       btn.style.opacity = '1';
@@ -1300,20 +1286,13 @@
     }
   }
 
-  // Apple Pay / Google Pay handler
   async function handlePrPayment(ev) {
     try {
       const session = document.getElementById('pay-session')?.textContent || 'Session';
-
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: 3000,
-          session,
-          name: ev.payerName || '',
-          email: ev.payerEmail || '',
-        }),
+        body: JSON.stringify({ amount: getDepositCents(), session, name: ev.payerName || '', email: ev.payerEmail || '' }),
       });
 
       if (!res.ok) { ev.complete('fail'); return; }
@@ -1321,29 +1300,21 @@
       if (serverError || !clientSecret) { ev.complete('fail'); return; }
 
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret,
-        { payment_method: ev.paymentMethod.id },
-        { handleActions: false }
+        clientSecret, { payment_method: ev.paymentMethod.id }, { handleActions: false }
       );
 
       if (confirmError) { ev.complete('fail'); return; }
-
       ev.complete('success');
 
       if (paymentIntent.status === 'requires_action') {
         const { error } = await stripe.confirmCardPayment(clientSecret);
-        if (error) {
-          document.getElementById('stripe-card-errors').textContent = error.message;
-          return;
-        }
+        if (error) { document.getElementById('stripe-card-errors').textContent = error.message; return; }
       }
 
       document.getElementById('successModal').classList.add('show');
-
     } catch (err) {
       ev.complete('fail');
-      document.getElementById('stripe-card-errors').textContent = 'Google Pay failed. Please try card payment.';
-      console.error('Google Pay error:', err);
+      document.getElementById('stripe-card-errors').textContent = 'Wallet payment failed. Please try card.';
     }
   }
 
