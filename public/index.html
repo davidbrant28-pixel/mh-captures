@@ -777,6 +777,47 @@
       </div>
       <div class="form-row"><label>Referred by <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(optional — enter name for free session)</span></label><input type="text" id="referred-by" placeholder="e.g. John Smith"></div>
       <div class="form-row"><label>Notes (optional)</label><textarea placeholder="Location preference, number of people, special requests… Note: locations outside the London, Ontario area may incur an additional travel fee."></textarea></div>
+      <!-- Minor Consent Form — Sports only -->
+      <div id="minor-consent-section" style="display:none;border:0.5px solid rgba(212,175,55,0.4);padding:1.25rem;margin-bottom:1rem;background:#0a0a0a;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;">
+          <span style="font-size:18px;">⚠️</span>
+          <span style="font-size:13px;font-weight:600;color:#d4af37;letter-spacing:0.04em;text-transform:uppercase;">Minor Consent Required</span>
+        </div>
+        <p style="font-size:13px;color:#c9a227;line-height:1.7;margin-bottom:1rem;">If any participants in this sports session are under 18, a parent or legal guardian must complete this consent form before photography begins.</p>
+
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
+          <input type="checkbox" id="involves-minor" onchange="toggleMinorForm(this)" style="width:16px;height:16px;accent-color:#d4af37;cursor:pointer;">
+          <label for="involves-minor" style="font-size:13px;color:#c9a227;cursor:pointer;">This session involves a minor (under 18)</label>
+        </div>
+
+        <div id="minor-form" style="display:none;border-top:0.5px solid rgba(212,175,55,0.2);padding-top:1rem;margin-top:0.5rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
+            <div class="form-row" style="margin:0;"><label>Parent/Guardian first name</label><input type="text" id="guardian-first" placeholder="Jane"></div>
+            <div class="form-row" style="margin:0;"><label>Parent/Guardian last name</label><input type="text" id="guardian-last" placeholder="Smith"></div>
+          </div>
+          <div class="form-row"><label>Parent/Guardian email</label><input type="email" id="guardian-email" placeholder="jane@example.com"></div>
+          <div class="form-row"><label>Minor's full name</label><input type="text" id="minor-name" placeholder="Full name of the minor"></div>
+          <div class="form-row"><label>Minor's age</label><input type="number" id="minor-age" placeholder="e.g. 14" min="1" max="17"></div>
+
+          <div style="background:#111111;border:0.5px solid rgba(212,175,55,0.2);padding:1rem;font-size:12px;color:#a08c2a;line-height:1.8;margin-bottom:1rem;">
+            <strong style="color:#d4af37;display:block;margin-bottom:6px;">Photo Release & Consent Agreement</strong>
+            I, the undersigned parent or legal guardian, hereby give MH Captures/Media permission to photograph the above-named minor during the booked sports session. I understand that:
+            <ul style="margin:8px 0 0 16px;display:flex;flex-direction:column;gap:4px;">
+              <li>Photos may be used by the client for personal use</li>
+              <li>Photos will not be published publicly without separate written consent</li>
+              <li>A digital copy of all edited photos will be delivered to the client</li>
+              <li>I have the legal authority to grant this permission</li>
+            </ul>
+          </div>
+
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:0.5rem;">
+            <input type="checkbox" id="consent-agreed" style="width:16px;height:16px;accent-color:#d4af37;cursor:pointer;margin-top:2px;">
+            <label for="consent-agreed" style="font-size:13px;color:#c9a227;cursor:pointer;line-height:1.6;">I confirm I am the parent or legal guardian of the minor named above, and I agree to the photo release terms stated here.</label>
+          </div>
+          <div class="form-row"><label>Parent/Guardian signature (type full name)</label><input type="text" id="guardian-signature" placeholder="Type your full name as signature"></div>
+        </div>
+      </div>
+
       <div class="booking-summary">
         <div class="summary-row"><span id="sum-session">Portrait session</span><span id="sum-base">$150</span></div>
         <div class="summary-row"><span id="sum-pkg-label">Essential package</span><span id="sum-pkg">Included</span></div>
@@ -784,7 +825,7 @@
         <div class="summary-total" style="font-weight:400;font-size:13px;color:var(--text-sec);"><span>Deposit due today</span><span id="sum-deposit">$30</span></div>
       </div>
       <p class="deposit-note">&#128274; Secure booking · Full refund if cancelled 14+ days before</p>
-      <button class="btn-primary" style="width:100%;padding:13px;font-size:14px;" onclick="document.getElementById('payment').scrollIntoView({behavior:'smooth'})">Continue to payment →</button>
+      <button class="btn-primary" style="width:100%;padding:13px;font-size:14px;" onclick="if(validateMinorConsent()) document.getElementById('payment').scrollIntoView({behavior:'smooth'})">Continue to payment →</button>
     </div>
   </div>
 </section>
@@ -1017,13 +1058,46 @@
     for (let i = 0; i < sel.options.length; i++) {
       if (sel.options[i].value.startsWith(name)) { sel.selectedIndex = i; break; }
     }
+    // Show minor consent section for Sports only
+    const consentSection = document.getElementById('minor-consent-section');
+    if (consentSection) consentSection.style.display = name === 'Sports' ? 'block' : 'none';
+    if (name !== 'Sports') {
+      const minorForm = document.getElementById('minor-form');
+      const minorCheck = document.getElementById('involves-minor');
+      if (minorForm) minorForm.style.display = 'none';
+      if (minorCheck) minorCheck.checked = false;
+    }
     updateSummary();
   }
 
   function updateFromSelect() {
     const v = document.getElementById('session-type').value.split('|');
     sessionName = v[0]; basePrice = parseInt(v[1]);
+    const consentSection = document.getElementById('minor-consent-section');
+    if (consentSection) consentSection.style.display = sessionName === 'Sports' ? 'block' : 'none';
     updateSummary();
+  }
+
+  function toggleMinorForm(checkbox) {
+    const minorForm = document.getElementById('minor-form');
+    if (minorForm) minorForm.style.display = checkbox.checked ? 'block' : 'none';
+  }
+
+  function validateMinorConsent() {
+    if (sessionName !== 'Sports') return true;
+    const involvesMinor = document.getElementById('involves-minor')?.checked;
+    if (!involvesMinor) return true;
+    const guardianFirst = document.getElementById('guardian-first')?.value?.trim();
+    const guardianEmail = document.getElementById('guardian-email')?.value?.trim();
+    const minorName = document.getElementById('minor-name')?.value?.trim();
+    const minorAge = document.getElementById('minor-age')?.value;
+    const agreed = document.getElementById('consent-agreed')?.checked;
+    const signature = document.getElementById('guardian-signature')?.value?.trim();
+    if (!guardianFirst || !guardianEmail || !minorName || !minorAge || !agreed || !signature) {
+      alert('Please complete the minor consent form before continuing.');
+      return false;
+    }
+    return true;
   }
 
   const pkgDetails = {
@@ -1246,14 +1320,17 @@
       const email = document.querySelector('#booking input[type="email"]')?.value?.trim() || '';
       const session = document.getElementById('pay-session')?.textContent || 'Session';
       const referredBy = document.getElementById('referred-by')?.value?.trim() || '';
+      const involvesMinor = document.getElementById('involves-minor')?.checked || false;
+      const minorName = involvesMinor ? (document.getElementById('minor-name')?.value?.trim() || '') : '';
+      const guardianName = involvesMinor ? (document.getElementById('guardian-first')?.value?.trim() + ' ' + (document.getElementById('guardian-last')?.value?.trim() || '')) : '';
 
       if (!name) throw new Error('Please enter the name on your card.');
+      if (!validateMinorConsent()) throw new Error('Please complete the minor consent form.');
 
-      // Step 1: Create PaymentIntent on server
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getDepositCents(), session, name, email, referredBy }),
+        body: JSON.stringify({ amount: getDepositCents(), session, name, email, referredBy, involvesMinor, minorName, guardianName }),
       });
 
       const data = await res.json();
