@@ -775,6 +775,7 @@
           </select>
         </div>
       </div>
+      <div class="form-row"><label>Referred by <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(optional — enter name for free session)</span></label><input type="text" id="referred-by" placeholder="e.g. John Smith"></div>
       <div class="form-row"><label>Notes (optional)</label><textarea placeholder="Location preference, number of people, special requests… Note: locations outside the London, Ontario area may incur an additional travel fee."></textarea></div>
       <div class="booking-summary">
         <div class="summary-row"><span id="sum-session">Portrait session</span><span id="sum-base">$150</span></div>
@@ -1184,24 +1185,17 @@
     if (typeof Stripe === 'undefined') return;
     stripe = Stripe(STRIPE_PK);
 
-    // Card element
-    const elements = stripe.elements({
-      appearance: {
-        theme: 'night',
-        variables: {
-          colorPrimary: '#d4af37',
-          colorBackground: '#111111',
-          colorText: '#d4af37',
-          colorDanger: '#e87070',
-          colorTextPlaceholder: '#6b5c1a',
-          borderRadius: '8px',
-          fontFamily: '"DM Sans", sans-serif',
-        }
-      }
-    });
+    const elements = stripe.elements();
+
     cardElement = elements.create('card', {
       style: {
-        base: { color: '#d4af37', fontFamily: '"DM Sans", sans-serif', fontSize: '15px', '::placeholder': { color: '#6b5c1a' } },
+        base: {
+          color: '#d4af37',
+          fontFamily: '"DM Sans", sans-serif',
+          fontSize: '15px',
+          '::placeholder': { color: '#6b5c1a' },
+          backgroundColor: '#1a1a1a',
+        },
         invalid: { color: '#e87070' }
       }
     });
@@ -1251,30 +1245,34 @@
       const name = document.getElementById('cardholder-name')?.value?.trim() || '';
       const email = document.querySelector('#booking input[type="email"]')?.value?.trim() || '';
       const session = document.getElementById('pay-session')?.textContent || 'Session';
+      const referredBy = document.getElementById('referred-by')?.value?.trim() || '';
 
       if (!name) throw new Error('Please enter the name on your card.');
 
+      // Step 1: Create PaymentIntent on server
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getDepositCents(), session, name, email }),
+        body: JSON.stringify({ amount: getDepositCents(), session, name, email, referredBy }),
       });
 
-      if (!res.ok) throw new Error(`Server error (${res.status})`);
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || `Server error (${res.status})`);
+      if (!data.clientSecret) throw new Error('No client secret returned.');
 
-      const { clientSecret, error: serverError } = await res.json();
-      if (serverError) throw new Error(serverError);
-      if (!clientSecret) throw new Error('No client secret returned.');
-
-      const { paymentIntent, error: stripeError } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card: cardElement, billing_details: { name, email: email || undefined } }
+      // Step 2: Confirm card payment
+      const result = await stripe.confirmCardPayment(data.clientSecret, {
+        payment_method: {
+          card: cardElement,
+          billing_details: { name, email: email || undefined },
+        }
       });
 
-      if (stripeError) throw new Error(stripeError.message);
-      if (paymentIntent.status === 'succeeded') {
+      if (result.error) throw new Error(result.error.message);
+      if (result.paymentIntent?.status === 'succeeded') {
         document.getElementById('successModal').classList.add('show');
       } else {
-        throw new Error(`Payment status: ${paymentIntent.status}`);
+        throw new Error('Payment did not complete. Please try again.');
       }
 
     } catch (err) {
@@ -1295,26 +1293,27 @@
         body: JSON.stringify({ amount: getDepositCents(), session, name: ev.payerName || '', email: ev.payerEmail || '' }),
       });
 
-      if (!res.ok) { ev.complete('fail'); return; }
-      const { clientSecret, error: serverError } = await res.json();
-      if (serverError || !clientSecret) { ev.complete('fail'); return; }
+      const data = await res.json();
+      if (!res.ok || data.error || !data.clientSecret) { ev.complete('fail'); return; }
 
-      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
-        clientSecret, { payment_method: ev.paymentMethod.id }, { handleActions: false }
+      const result = await stripe.confirmCardPayment(
+        data.clientSecret,
+        { payment_method: ev.paymentMethod.id },
+        { handleActions: false }
       );
 
-      if (confirmError) { ev.complete('fail'); return; }
+      if (result.error) { ev.complete('fail'); return; }
       ev.complete('success');
 
-      if (paymentIntent.status === 'requires_action') {
-        const { error } = await stripe.confirmCardPayment(clientSecret);
+      if (result.paymentIntent?.status === 'requires_action') {
+        const { error } = await stripe.confirmCardPayment(data.clientSecret);
         if (error) { document.getElementById('stripe-card-errors').textContent = error.message; return; }
       }
 
       document.getElementById('successModal').classList.add('show');
     } catch (err) {
       ev.complete('fail');
-      document.getElementById('stripe-card-errors').textContent = 'Wallet payment failed. Please try card.';
+      document.getElementById('stripe-card-errors').textContent = 'Wallet payment failed. Please use card below.';
     }
   }
 
