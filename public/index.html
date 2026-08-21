@@ -211,7 +211,53 @@
   .port-overlay { position: absolute; inset: 0; }
   .port-label, .port-cat, .port-name { display: none; }
 
-  /* ── REVIEW GRID ── */
+  /* ── PICTURE ANIMATIONS ── */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes zoomIn {
+    from { opacity: 0; transform: scale(1.04); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes revealUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes goldPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); }
+    50% { box-shadow: 0 0 18px 2px rgba(212,175,55,0.18); }
+  }
+
+  /* Hero images fade + zoom in on load */
+  .hero-img { animation: zoomIn 1.2s ease both; }
+  .hero-img:nth-child(1) { animation-delay: 0s; }
+  .hero-img:nth-child(2) { animation-delay: 0.2s; }
+  .hero-img:nth-child(3) { animation-delay: 0.35s; }
+
+  /* Portfolio images reveal as you scroll */
+  .port-item {
+    opacity: 0; transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .port-item.visible { opacity: 1; transform: translateY(0); }
+  .port-item:nth-child(2) { transition-delay: 0.1s; }
+  .port-item:nth-child(3) { transition-delay: 0.2s; }
+  .port-item:nth-child(4) { transition-delay: 0.15s; }
+  .port-item:nth-child(5) { transition-delay: 0.05s; }
+  .port-item:nth-child(6) { transition-delay: 0.2s; }
+  .port-item:nth-child(7) { transition-delay: 0.1s; }
+  .port-item:nth-child(8) { transition-delay: 0.25s; }
+  .port-item:nth-child(9) { transition-delay: 0.15s; }
+  .port-item:nth-child(10) { transition-delay: 0.3s; }
+
+  /* Portfolio hover — zoom image + gold border pulse */
+  .port-item img { transition: transform 0.5s ease; }
+  .port-item:hover img { transform: scale(1.07); }
+  .port-item:hover { animation: goldPulse 1s ease; }
+
+  /* Hero image parallax-like subtle zoom on scroll handled by JS */
+  .hero-img img { transition: transform 0.1s linear; }
   .review-grid {
     display: grid; grid-template-columns: 1fr 1fr;
     border: 0.5px solid var(--border); margin-top: 2rem; overflow: hidden;
@@ -1394,8 +1440,34 @@
     }
   }
 
+  /* ── PICTURE SCROLL REVEAL ── */
+  function initReveal() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.port-item').forEach(el => observer.observe(el));
+  }
+
+  /* ── HERO PARALLAX ── */
+  function initParallax() {
+    window.addEventListener('scroll', () => {
+      const scrolled = window.scrollY;
+      document.querySelectorAll('.hero-img img').forEach((img, i) => {
+        const speed = 0.06 + (i * 0.02);
+        img.style.transform = `translateY(${scrolled * speed}px) scale(1.08)`;
+      });
+    }, { passive: true });
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
     initStripe();
+    initReveal();
+    initParallax();
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
       document.getElementById('successModal').classList.add('show');
