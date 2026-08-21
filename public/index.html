@@ -212,6 +212,19 @@
   .port-overlay { position: absolute; inset: 0; }
   .port-label, .port-cat, .port-name { display: none; }
 
+  /* ── ANNOUNCEMENT BAR SLIDE ── */
+  #announcement-bar {
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    transform: translateX(0);
+    opacity: 1;
+    overflow: hidden;
+  }
+  #announcement-bar.slide-out {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
   /* ── PICTURE ANIMATIONS ── */
   @keyframes fadeIn {
     from { opacity: 0; }
@@ -1442,6 +1455,22 @@
     }
   }
 
+  /* ── BANNER SCROLL BEHAVIOUR ── */
+  function initBannerScroll() {
+    const bar = document.getElementById('announcement-bar');
+    if (!bar) return;
+    let lastScroll = 0;
+    window.addEventListener('scroll', () => {
+      const current = window.scrollY;
+      if (current > lastScroll && current > 60) {
+        bar.classList.add('slide-out');
+      } else if (current < lastScroll) {
+        bar.classList.remove('slide-out');
+      }
+      lastScroll = current;
+    }, { passive: true });
+  }
+
   /* ── PICTURE SCROLL REVEAL ── */
   function initReveal() {
     const observer = new IntersectionObserver((entries) => {
@@ -1470,6 +1499,7 @@
     initStripe();
     initReveal();
     initParallax();
+    initBannerScroll();
     const params = new URLSearchParams(window.location.search);
     if (params.get('payment') === 'success') {
       document.getElementById('successModal').classList.add('show');
