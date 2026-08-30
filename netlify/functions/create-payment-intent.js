@@ -5,6 +5,7 @@ const https = require('https');
 function sendNotification(data) {
   return new Promise((resolve) => {
     const payload = JSON.stringify({
+      _replyto: data.email,
       _subject: data.subject,
       name: data.name,
       email: data.email,
