@@ -924,12 +924,13 @@
     </div>
     <div class="booking-form">
       <div class="form-title">Session details</div>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:1rem;">Fields marked <span style="color:#d4af37;">*</span> are required</p>
       <div class="form-grid">
-        <div class="form-row"><label>First name</label><input type="text" placeholder="Jane" id="fname"></div>
-        <div class="form-row"><label>Last name</label><input type="text" placeholder="Smith" id="lname"></div>
+        <div class="form-row"><label>First name <span style="color:#d4af37;">*</span></label><input type="text" placeholder="Jane" id="fname" required></div>
+        <div class="form-row"><label>Last name <span style="color:#d4af37;">*</span></label><input type="text" placeholder="Smith" id="lname" required></div>
       </div>
-      <div class="form-row"><label>Email address</label><input type="email" placeholder="jane@example.com" id="email"></div>
-      <div class="form-row"><label>Phone number</label><input type="tel" placeholder="e.g. 226-688-8256" id="phone"></div>
+      <div class="form-row"><label>Email address <span style="color:#d4af37;">*</span></label><input type="email" placeholder="jane@example.com" id="email" required></div>
+      <div class="form-row"><label>Phone number <span style="color:#d4af37;">*</span></label><input type="tel" placeholder="e.g. 226-688-8256" id="phone" required></div>
       <div class="form-row">
         <label>Session type</label>
         <select id="session-type" onchange="updateFromSelect()">
@@ -1277,7 +1278,41 @@
     if (paymentSection) paymentSection.style.display = checkbox.checked ? 'none' : 'block';
   }
 
+  function validateBookingFields() {
+    const fname = document.getElementById('fname');
+    const lname = document.getElementById('lname');
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+
+    // Reset borders
+    [fname, lname, email, phone].forEach(el => {
+      if (el) el.style.borderColor = 'rgba(212,175,55,0.3)';
+    });
+
+    if (!fname?.value?.trim() || !lname?.value?.trim()) {
+      if (fname) fname.style.borderColor = '#e87070';
+      if (lname) lname.style.borderColor = '#e87070';
+      alert('Please enter your full name to continue.');
+      fname?.focus();
+      return false;
+    }
+    if (!email?.value?.trim() || !email.value.includes('@')) {
+      if (email) email.style.borderColor = '#e87070';
+      alert('Please enter a valid email address to continue.');
+      email?.focus();
+      return false;
+    }
+    if (!phone?.value?.trim()) {
+      if (phone) phone.style.borderColor = '#e87070';
+      alert('Please enter your phone number to continue.');
+      phone?.focus();
+      return false;
+    }
+    return true;
+  }
+
   async function handleContinue() {
+    if (!validateBookingFields()) return;
     if (!validateMinorConsent()) return;
 
     const isFirstTime = document.getElementById('first-time-client')?.checked;
@@ -1581,7 +1616,7 @@
       const minorName = involvesMinor ? (document.getElementById('minor-name')?.value?.trim() || '') : '';
       const guardianName = involvesMinor ? (document.getElementById('guardian-first')?.value?.trim() + ' ' + (document.getElementById('guardian-last')?.value?.trim() || '')) : '';
 
-      if (!name) throw new Error('Please enter the name on your card.');
+      if (!validateBookingFields()) return;
       if (!validateMinorConsent()) throw new Error('Please complete the minor consent form.');
 
       const res = await fetch('/.netlify/functions/create-payment-intent', {
