@@ -12,7 +12,7 @@ exports.handler = async (event) => {
   };
 
   try {
-    const { amount, session, name, email, referredBy, involvesMinor, minorName, guardianName, checkFreeEligibility } = JSON.parse(event.body);
+    const { amount, session, name, email, phone, referredBy, involvesMinor, minorName, guardianName, checkFreeEligibility } = JSON.parse(event.body);
 
     // ── FREE SESSION ELIGIBILITY CHECK ──
     if (checkFreeEligibility) {
@@ -21,44 +21,89 @@ exports.handler = async (event) => {
       }
 
       const cleanEmail = email.toLowerCase().trim();
+      const cleanName = (name || '').toLowerCase().trim();
 
-      // Check if this email has already paid for a session
-      const existing = await stripe.customers.list({ email: cleanEmail, limit: 10 });
-      if (existing.data.length > 0) {
-        for (const customer of existing.data) {
-          // Already used free session
+      const cleanEmail = email.toLowerCase().trim();
+      const cleanName = (name || '').toLowerCase().trim();
+      const cleanPhone = (phone || '').replace(/\D/g, ''); // digits only
+
+      // Get ALL customers to check email, name and phone
+      const allCustomers = await stripe.customers.list({ limit: 100 });
+
+      for (const customer of allCustomers.data) {
+        const customerEmail = (customer.email || '').toLowerCase();
+        const customerName = (customer.name || '').toLowerCase();
+        const customerPhone = (customer.phone || '').replace(/\D/g, '');
+
+        // Block if email already used
+        if (customerEmail === cleanEmail) {
           if (customer.metadata && customer.metadata.first_time_free === 'yes') {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'This email has already claimed a free session.' }) };
           }
-          // Already paid for a session
           const charges = await stripe.charges.list({ customer: customer.id, limit: 1 });
           if (charges.data.length > 0) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'This email has already booked a session. The free offer is for new clients only.' }) };
           }
         }
+
+        // Block if same name AND same phone already claimed free session
+        if (cleanName && customerName && customerName === cleanName) {
+          if (cleanPhone && customerPhone && customerPhone === cleanPhone) {
+            if (customer.metadata && customer.metadata.first_time_free === 'yes') {
+              return { statusCode: 400, headers, body: JSON.stringify({ error: 'This name and phone number have already been used to claim a free session.' }) };
+            }
+          } else if (!cleanPhone) {
+            // No phone provided — fall back to name-only check
+            if (customer.metadata && customer.metadata.first_time_free === 'yes') {
+              return { statusCode: 400, headers, body: JSON.stringify({ error: 'This name has already been used to claim a free session. Please add your phone number to continue.' }) };
+            }
+          }
+        }
+
+        // Block if same phone already claimed free session (different name/email)
+        if (cleanPhone && customerPhone && customerPhone === cleanPhone) {
+          if (customer.metadata && customer.metadata.first_time_free === 'yes') {
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'This phone number has already been used to claim a free session.' }) };
+          }
+        }
       }
 
-      // If referral name provided, verify it exists in Stripe
+      // If referral name provided
       if (referredBy && referredBy.trim().length > 0) {
         const referralName = referredBy.trim().toLowerCase();
-        const allCustomers = await stripe.customers.list({ limit: 100 });
+
+        // Block self-referral by name
+        if (cleanName && (cleanName.includes(referralName) || referralName.includes(cleanName.split(' ')[0]))) {
+          return { statusCode: 400, headers, body: JSON.stringify({ error: 'You cannot use your own name as a referral.' }) };
+        }
+
+        // Find referrer in Stripe
         const match = allCustomers.data.find(c =>
           c.name && c.name.toLowerCase().includes(referralName)
         );
+
         if (!match) {
           return { statusCode: 400, headers, body: JSON.stringify({ error: `We could not find "${referredBy}" as a registered client. Please check the spelling and try again.` }) };
         }
-        // Referral is valid — free session approved
+
+        // Block if referrer email matches booking email
+        if (match.email && match.email.toLowerCase() === cleanEmail) {
+          return { statusCode: 400, headers, body: JSON.stringify({ error: 'You cannot refer yourself.' }) };
+        }
+
+        // Valid referral — approve free session
         await stripe.customers.create({
           email: cleanEmail, name: name || '',
+          phone: phone || '',
           metadata: { first_time_free: 'yes', session_type: session || '', referred_by: referredBy, claimed_at: new Date().toISOString() }
         });
         return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'referral' }) };
       }
 
-      // No referral — first time client free session
+      // No referral — first time client
       await stripe.customers.create({
         email: cleanEmail, name: name || '',
+        phone: phone || '',
         metadata: { first_time_free: 'yes', session_type: session || '', referred_by: '', claimed_at: new Date().toISOString() }
       });
       return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'first_time' }) };
