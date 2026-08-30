@@ -22,12 +22,8 @@ exports.handler = async (event) => {
 
       const cleanEmail = email.toLowerCase().trim();
       const cleanName = (name || '').toLowerCase().trim();
+      const cleanPhone = (phone || '').replace(/\D/g, '');
 
-      const cleanEmail = email.toLowerCase().trim();
-      const cleanName = (name || '').toLowerCase().trim();
-      const cleanPhone = (phone || '').replace(/\D/g, ''); // digits only
-
-      // Get ALL customers to check email, name and phone
       const allCustomers = await stripe.customers.list({ limit: 100 });
 
       for (const customer of allCustomers.data) {
@@ -46,21 +42,20 @@ exports.handler = async (event) => {
           }
         }
 
-        // Block if same name AND same phone already claimed free session
+        // Block if same name AND phone already claimed free session
         if (cleanName && customerName && customerName === cleanName) {
           if (cleanPhone && customerPhone && customerPhone === cleanPhone) {
             if (customer.metadata && customer.metadata.first_time_free === 'yes') {
               return { statusCode: 400, headers, body: JSON.stringify({ error: 'This name and phone number have already been used to claim a free session.' }) };
             }
           } else if (!cleanPhone) {
-            // No phone provided — fall back to name-only check
             if (customer.metadata && customer.metadata.first_time_free === 'yes') {
-              return { statusCode: 400, headers, body: JSON.stringify({ error: 'This name has already been used to claim a free session. Please add your phone number to continue.' }) };
+              return { statusCode: 400, headers, body: JSON.stringify({ error: 'This name has already been used. Please add your phone number to continue.' }) };
             }
           }
         }
 
-        // Block if same phone already claimed free session (different name/email)
+        // Block if same phone already claimed free session
         if (cleanPhone && customerPhone && customerPhone === cleanPhone) {
           if (customer.metadata && customer.metadata.first_time_free === 'yes') {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'This phone number has already been used to claim a free session.' }) };
@@ -91,10 +86,9 @@ exports.handler = async (event) => {
           return { statusCode: 400, headers, body: JSON.stringify({ error: 'You cannot refer yourself.' }) };
         }
 
-        // Valid referral — approve free session
+        // Valid referral — record and approve
         await stripe.customers.create({
-          email: cleanEmail, name: name || '',
-          phone: phone || '',
+          email: cleanEmail, name: name || '', phone: phone || '',
           metadata: { first_time_free: 'yes', session_type: session || '', referred_by: referredBy, claimed_at: new Date().toISOString() }
         });
         return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'referral' }) };
@@ -102,8 +96,7 @@ exports.handler = async (event) => {
 
       // No referral — first time client
       await stripe.customers.create({
-        email: cleanEmail, name: name || '',
-        phone: phone || '',
+        email: cleanEmail, name: name || '', phone: phone || '',
         metadata: { first_time_free: 'yes', session_type: session || '', referred_by: '', claimed_at: new Date().toISOString() }
       });
       return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'first_time' }) };
@@ -113,6 +106,7 @@ exports.handler = async (event) => {
     if (!amount || amount < 100) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid amount.' }) };
     }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount),
       currency: 'cad',
@@ -125,6 +119,7 @@ exports.handler = async (event) => {
       },
       receipt_email: email || undefined,
     });
+
     return { statusCode: 200, headers, body: JSON.stringify({ clientSecret: paymentIntent.client_secret }) };
 
   } catch (err) {
