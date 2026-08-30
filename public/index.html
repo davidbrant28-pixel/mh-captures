@@ -1313,19 +1313,19 @@
 
   async function notifyBooking({ name, email, phone, session, referredBy, type }) {
     try {
+      const formData = new FormData();
+      formData.append('_subject', `New Booking — ${type} — ${session}`);
+      formData.append('name', name || '');
+      formData.append('email', email || '');
+      formData.append('phone', phone || 'Not provided');
+      formData.append('session', session || '');
+      formData.append('booking_type', type || '');
+      formData.append('referred_by', referredBy || 'None');
+      formData.append('message', `New booking:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nSession: ${session}\nType: ${type}\nReferred by: ${referredBy || 'None'}`);
+
       await fetch('https://formspree.io/f/mqpkeajb', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({
-          _subject: `New Booking — ${type} — ${session}`,
-          name,
-          email,
-          phone: phone || 'Not provided',
-          session,
-          booking_type: type,
-          referred_by: referredBy || 'None',
-          message: `New booking received:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nSession: ${session}\nBooking type: ${type}\nReferred by: ${referredBy || 'None'}`,
-        }),
+        body: formData,
       });
     } catch (err) {
       console.error('Notification error:', err);
@@ -1531,15 +1531,15 @@
     btn.disabled = true;
     btn.textContent = 'Sending…';
 
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('subject', subject || 'General inquiry');
+    formData.append('message', message);
+
     fetch('https://formspree.io/f/mqpkeajb', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        name,
-        email,
-        subject: subject || 'General inquiry',
-        message,
-      }),
+      body: formData,
     })
     .then(res => res.json())
     .then(data => {
