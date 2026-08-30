@@ -1311,6 +1311,27 @@
     return true;
   }
 
+  async function notifyBooking({ name, email, phone, session, referredBy, type }) {
+    try {
+      await fetch('https://formspree.io/f/mqpkeajb', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          _subject: `New Booking — ${type} — ${session}`,
+          name,
+          email,
+          phone: phone || 'Not provided',
+          session,
+          booking_type: type,
+          referred_by: referredBy || 'None',
+          message: `New booking received:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nSession: ${session}\nBooking type: ${type}\nReferred by: ${referredBy || 'None'}`,
+        }),
+      });
+    } catch (err) {
+      console.error('Notification error:', err);
+    }
+  }
+
   async function handleContinue() {
     if (!validateBookingFields()) return;
     if (!validateMinorConsent()) return;
@@ -1346,6 +1367,13 @@
         }
 
         if (data.free) {
+          // Notify via Formspree
+          await notifyBooking({
+            name, email, phone, session,
+            referredBy,
+            type: data.reason === 'referral' ? 'Free session (referral)' : 'Free session (first-time)',
+          });
+
           const modal = document.getElementById('successModal');
           const modalTitle = modal?.querySelector('h3');
           const modalText = modal?.querySelector('p');
@@ -1639,6 +1667,15 @@
 
       if (result.error) throw new Error(result.error.message);
       if (result.paymentIntent?.status === 'succeeded') {
+        // Notify via Formspree
+        await notifyBooking({
+          name: document.getElementById('cardholder-name')?.value?.trim() || name,
+          email,
+          phone: document.getElementById('phone')?.value?.trim() || '',
+          session: document.getElementById('pay-session')?.textContent || 'Session',
+          referredBy: document.getElementById('referred-by')?.value?.trim() || '',
+          type: 'Paid deposit ($30)',
+        });
         document.getElementById('successModal').classList.add('show');
       } else {
         throw new Error('Payment did not complete. Please try again.');
