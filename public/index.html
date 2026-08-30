@@ -1278,41 +1278,17 @@
 
   async function handleContinue() {
     if (!validateMinorConsent()) return;
+
     const isFirstTime = document.getElementById('first-time-client')?.checked;
     const referredBy = document.getElementById('referred-by')?.value?.trim() || '';
+    const email = document.getElementById('email')?.value?.trim() || '';
+    const name = (document.getElementById('fname')?.value?.trim() || '') + ' ' + (document.getElementById('lname')?.value?.trim() || '');
+    const session = document.getElementById('session-type')?.value?.split('|')[0] || 'Session';
 
-    // If referral name entered, verify it first
-    if (referredBy) {
-      const btn = document.querySelector('.booking-form .btn-primary');
-      if (btn) { btn.disabled = true; btn.textContent = 'Verifying referral…'; }
-
-      try {
-        const res = await fetch('/.netlify/functions/create-payment-intent', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: 1, referredBy, verifyReferralOnly: true }),
-        });
-        const data = await res.json();
-        if (data.error) {
-          alert(data.error);
-          if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
-          return;
-        }
-      } catch (err) {
-        alert('Could not verify referral. Please check your connection.');
-        if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
-        return;
-      }
-      if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
-    }
-
-    if (isFirstTime) {
-      const email = document.getElementById('email')?.value?.trim();
-      const name = (document.getElementById('fname')?.value?.trim() || '') + ' ' + (document.getElementById('lname')?.value?.trim() || '');
-      const session = document.getElementById('session-type')?.value?.split('|')[0] || 'Session';
-
+    // Free session: first-time client OR has a referral name
+    if (isFirstTime || referredBy) {
       if (!email || !email.includes('@')) {
-        alert('Please enter your email address to claim the free session.');
+        alert('Please enter your email address to continue.');
         return;
       }
 
@@ -1323,7 +1299,7 @@
         const res = await fetch('/.netlify/functions/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isFirstTime: true, email, name, session, referredBy }),
+          body: JSON.stringify({ checkFreeEligibility: true, email, name, session, referredBy }),
         });
         const data = await res.json();
 
@@ -1332,21 +1308,27 @@
           return;
         }
 
-        const modal = document.getElementById('successModal');
-        const modalTitle = modal?.querySelector('h3');
-        const modalText = modal?.querySelector('p');
-        if (modalTitle) modalTitle.textContent = 'Free Session Confirmed!';
-        if (modalText) modalText.textContent = 'Welcome! We\'ll be in touch within 24 hours to confirm your date and details.';
-        modal?.classList.add('show');
+        if (data.free) {
+          const modal = document.getElementById('successModal');
+          const modalTitle = modal?.querySelector('h3');
+          const modalText = modal?.querySelector('p');
+          if (modalTitle) modalTitle.textContent = 'Session Confirmed — No Charge!';
+          if (modalText) modalText.textContent = data.reason === 'referral'
+            ? `Your referral from ${referredBy} has been verified. Your session is free — we'll be in touch within 24 hours to confirm your date.`
+            : 'Welcome! As a first-time client your session is free — we\'ll be in touch within 24 hours to confirm your date.';
+          modal?.classList.add('show');
+          // Hide payment section
+          document.getElementById('payment').style.display = 'none';
+        }
 
       } catch (err) {
         alert('Network error. Please try again.');
       } finally {
-        const btn = document.querySelector('.booking-form .btn-primary');
         if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
       }
 
     } else {
+      // Regular paying client
       document.getElementById('payment').scrollIntoView({ behavior: 'smooth' });
     }
   }
