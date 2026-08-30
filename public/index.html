@@ -1323,10 +1323,18 @@
       formData.append('referred_by', referredBy || 'None');
       formData.append('message', `New booking:\n\nName: ${name}\nEmail: ${email}\nPhone: ${phone || 'Not provided'}\nSession: ${session}\nType: ${type}\nReferred by: ${referredBy || 'None'}`);
 
-      await fetch('https://formspree.io/f/mqpkeajb', {
+      const res = await fetch('https://formspree.io/f/mqpkeajb', {
         method: 'POST',
+        headers: { 'Accept': 'application/json' },
         body: formData,
       });
+
+      const data = await res.json();
+      if (!res.ok || data.errors) {
+        console.error('Formspree error:', data);
+      } else {
+        console.log('Booking notification sent successfully');
+      }
     } catch (err) {
       console.error('Notification error:', err);
     }
