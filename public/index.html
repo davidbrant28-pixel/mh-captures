@@ -929,6 +929,7 @@
         <div class="form-row"><label>Last name</label><input type="text" placeholder="Smith" id="lname"></div>
       </div>
       <div class="form-row"><label>Email address</label><input type="email" placeholder="jane@example.com" id="email"></div>
+      <div class="form-row"><label>Phone number</label><input type="tel" placeholder="e.g. 226-688-8256" id="phone"></div>
       <div class="form-row">
         <label>Session type</label>
         <select id="session-type" onchange="updateFromSelect()">
@@ -1284,6 +1285,7 @@
     const email = document.getElementById('email')?.value?.trim() || '';
     const name = (document.getElementById('fname')?.value?.trim() || '') + ' ' + (document.getElementById('lname')?.value?.trim() || '');
     const session = document.getElementById('session-type')?.value?.split('|')[0] || 'Session';
+    const phone = document.getElementById('phone')?.value?.trim() || '';
 
     // Free session: first-time client OR has a referral name
     if (isFirstTime || referredBy) {
@@ -1299,7 +1301,7 @@
         const res = await fetch('/.netlify/functions/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ checkFreeEligibility: true, email, name, session, referredBy }),
+          body: JSON.stringify({ checkFreeEligibility: true, email, name, phone, session, referredBy }),
         });
         const data = await res.json();
 
