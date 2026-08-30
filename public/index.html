@@ -215,6 +215,31 @@
   .port-overlay { position: absolute; inset: 0; }
   .port-label, .port-cat, .port-name { display: none; }
 
+  /* ── CUSTOM CHECKBOX ── */
+  input[type="checkbox"] {
+    width: 18px; height: 18px;
+    appearance: none; -webkit-appearance: none;
+    background: #0a0a0a;
+    border: 1.5px solid #d4af37;
+    border-radius: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: background 0.15s;
+  }
+  input[type="checkbox"]:checked {
+    background: #d4af37;
+  }
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px; top: 1px;
+    width: 5px; height: 9px;
+    border: 2px solid #0a0a0a;
+    border-top: none; border-left: none;
+    transform: rotate(45deg);
+  }
+
   /* ── ANNOUNCEMENT BAR SLIDE ── */
   #announcement-bar {
     transition: transform 0.4s ease, opacity 0.4s ease;
@@ -931,6 +956,16 @@
         </div>
       </div>
       <div class="form-row"><label>Referred by <span style="font-size:11px;color:var(--text-muted);font-weight:400;">(optional — enter name for free session)</span></label><input type="text" id="referred-by" placeholder="e.g. John Smith"></div>
+
+      <!-- First time client -->
+      <div style="border:0.5px solid rgba(212,175,55,0.4);padding:1rem;background:#0a0a0a;margin-bottom:1rem;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="first-time-client" onchange="toggleFirstTime(this)">
+          <label for="first-time-client" style="font-size:13px;color:#d4af37;cursor:pointer;font-weight:500;">I am a first-time client — claim my <strong>free session</strong></label>
+        </div>
+        <p id="first-time-note" style="display:none;font-size:12px;color:#c9a227;margin-top:8px;line-height:1.6;">✓ Your deposit has been waived. Just complete the booking form and we'll confirm your free session within 24 hours.</p>
+      </div>
+
       <div class="form-row"><label>Notes (optional)</label><textarea placeholder="Location preference, number of people, special requests… Note: locations outside the London, Ontario area may incur an additional travel fee."></textarea></div>
       <!-- Minor Consent Form — Sports only -->
       <div id="minor-consent-section" style="display:none;border:0.5px solid rgba(212,175,55,0.4);padding:1.25rem;margin-bottom:1rem;background:#0a0a0a;">
@@ -941,7 +976,7 @@
         <p style="font-size:13px;color:#c9a227;line-height:1.7;margin-bottom:1rem;">If any participants in this sports session are under 18, a parent or legal guardian must complete this consent form before photography begins.</p>
 
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
-          <input type="checkbox" id="involves-minor" onchange="toggleMinorForm(this)" style="width:16px;height:16px;accent-color:#d4af37;cursor:pointer;">
+          <input type="checkbox" id="involves-minor" onchange="toggleMinorForm(this)" style="flex-shrink:0;">
           <label for="involves-minor" style="font-size:13px;color:#c9a227;cursor:pointer;">This session involves a minor (under 18)</label>
         </div>
 
@@ -966,7 +1001,7 @@
           </div>
 
           <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:0.5rem;">
-            <input type="checkbox" id="consent-agreed" style="width:16px;height:16px;accent-color:#d4af37;cursor:pointer;margin-top:2px;">
+            <input type="checkbox" id="consent-agreed" style="flex-shrink:0;margin-top:2px;">
             <label for="consent-agreed" style="font-size:13px;color:#c9a227;cursor:pointer;line-height:1.6;">I confirm I am the parent or legal guardian of the minor named above, and I agree to the photo release terms stated here.</label>
           </div>
           <div class="form-row"><label>Parent/Guardian signature (type full name)</label><input type="text" id="guardian-signature" placeholder="Type your full name as signature"></div>
@@ -980,7 +1015,7 @@
         <div class="summary-total" style="font-weight:400;font-size:13px;color:var(--text-sec);"><span>Deposit due today</span><span id="sum-deposit">$30</span></div>
       </div>
       <p class="deposit-note">&#128274; Secure booking · Full refund if cancelled 14+ days before</p>
-      <button class="btn-primary" style="width:100%;padding:13px;font-size:14px;" onclick="if(validateMinorConsent()) document.getElementById('payment').scrollIntoView({behavior:'smooth'})">Continue to payment →</button>
+      <button class="btn-primary" style="width:100%;padding:13px;font-size:14px;" onclick="handleContinue()">Continue to payment →</button>
     </div>
   </div>
 </section>
@@ -1232,6 +1267,64 @@
     const consentSection = document.getElementById('minor-consent-section');
     if (consentSection) consentSection.style.display = sessionName === 'Sports' ? 'block' : 'none';
     updateSummary();
+  }
+
+  function toggleFirstTime(checkbox) {
+    const note = document.getElementById('first-time-note');
+    const paymentSection = document.getElementById('payment');
+    note.style.display = checkbox.checked ? 'block' : 'none';
+    if (paymentSection) paymentSection.style.display = checkbox.checked ? 'none' : 'block';
+  }
+
+  async function handleContinue() {
+    if (!validateMinorConsent()) return;
+    const isFirstTime = document.getElementById('first-time-client')?.checked;
+
+    if (isFirstTime) {
+      const email = document.getElementById('email')?.value?.trim();
+      const name = document.getElementById('fname')?.value?.trim() + ' ' + (document.getElementById('lname')?.value?.trim() || '');
+      const session = document.getElementById('session-type')?.value?.split('|')[0] || 'Session';
+      const referredBy = document.getElementById('referred-by')?.value?.trim() || '';
+
+      if (!email || !email.includes('@')) {
+        alert('Please enter your email address to claim the free session.');
+        return;
+      }
+
+      const btn = document.querySelector('.booking-form .btn-primary');
+      if (btn) { btn.disabled = true; btn.textContent = 'Verifying…'; }
+
+      try {
+        const res = await fetch('/.netlify/functions/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isFirstTime: true, email, name, session, referredBy }),
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          alert(data.error || 'Unable to verify. Please try again.');
+          return;
+        }
+
+        // Success — show confirmation modal
+        const modal = document.getElementById('successModal');
+        const modalTitle = modal?.querySelector('h3');
+        const modalText = modal?.querySelector('p');
+        if (modalTitle) modalTitle.textContent = 'Free Session Confirmed!';
+        if (modalText) modalText.textContent = 'Welcome! We\'ve reserved your free first session. We\'ll be in touch within 24 hours to confirm your date and details.';
+        modal?.classList.add('show');
+
+      } catch (err) {
+        alert('Network error. Please check your connection and try again.');
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
+      }
+
+    } else {
+      document.getElementById('payment').scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   function toggleMinorForm(checkbox) {
