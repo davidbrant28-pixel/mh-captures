@@ -1279,12 +1279,37 @@
   async function handleContinue() {
     if (!validateMinorConsent()) return;
     const isFirstTime = document.getElementById('first-time-client')?.checked;
+    const referredBy = document.getElementById('referred-by')?.value?.trim() || '';
+
+    // If referral name entered, verify it first
+    if (referredBy) {
+      const btn = document.querySelector('.booking-form .btn-primary');
+      if (btn) { btn.disabled = true; btn.textContent = 'Verifying referral…'; }
+
+      try {
+        const res = await fetch('/.netlify/functions/create-payment-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: 1, referredBy, verifyReferralOnly: true }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert(data.error);
+          if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
+          return;
+        }
+      } catch (err) {
+        alert('Could not verify referral. Please check your connection.');
+        if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
+        return;
+      }
+      if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
+    }
 
     if (isFirstTime) {
       const email = document.getElementById('email')?.value?.trim();
-      const name = document.getElementById('fname')?.value?.trim() + ' ' + (document.getElementById('lname')?.value?.trim() || '');
+      const name = (document.getElementById('fname')?.value?.trim() || '') + ' ' + (document.getElementById('lname')?.value?.trim() || '');
       const session = document.getElementById('session-type')?.value?.split('|')[0] || 'Session';
-      const referredBy = document.getElementById('referred-by')?.value?.trim() || '';
 
       if (!email || !email.includes('@')) {
         alert('Please enter your email address to claim the free session.');
@@ -1300,25 +1325,24 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ isFirstTime: true, email, name, session, referredBy }),
         });
-
         const data = await res.json();
 
-        if (!res.ok || data.error) {
-          alert(data.error || 'Unable to verify. Please try again.');
+        if (data.error) {
+          alert(data.error);
           return;
         }
 
-        // Success — show confirmation modal
         const modal = document.getElementById('successModal');
         const modalTitle = modal?.querySelector('h3');
         const modalText = modal?.querySelector('p');
         if (modalTitle) modalTitle.textContent = 'Free Session Confirmed!';
-        if (modalText) modalText.textContent = 'Welcome! We\'ve reserved your free first session. We\'ll be in touch within 24 hours to confirm your date and details.';
+        if (modalText) modalText.textContent = 'Welcome! We\'ll be in touch within 24 hours to confirm your date and details.';
         modal?.classList.add('show');
 
       } catch (err) {
-        alert('Network error. Please check your connection and try again.');
+        alert('Network error. Please try again.');
       } finally {
+        const btn = document.querySelector('.booking-form .btn-primary');
         if (btn) { btn.disabled = false; btn.textContent = 'Continue to payment →'; }
       }
 
