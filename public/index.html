@@ -1630,52 +1630,54 @@
     const proc = document.getElementById('stripe-processing');
     const errDiv = document.getElementById('stripe-card-errors');
 
+    errDiv.textContent = '';
+
+    // Validate booking fields first
+    if (!validateBookingFields()) return;
+    if (!validateMinorConsent()) return;
+
     btn.disabled = true;
     btn.style.opacity = '0.6';
     proc.style.display = 'block';
-    errDiv.textContent = '';
 
     try {
-      const name = document.getElementById('cardholder-name')?.value?.trim() || '';
-      const email = document.querySelector('#booking input[type="email"]')?.value?.trim() || '';
+      const cardName = document.getElementById('cardholder-name')?.value?.trim() || '';
+      const email = document.getElementById('email')?.value?.trim() || '';
+      const phone = document.getElementById('phone')?.value?.trim() || '';
       const session = document.getElementById('pay-session')?.textContent || 'Session';
       const referredBy = document.getElementById('referred-by')?.value?.trim() || '';
       const involvesMinor = document.getElementById('involves-minor')?.checked || false;
       const minorName = involvesMinor ? (document.getElementById('minor-name')?.value?.trim() || '') : '';
-      const guardianName = involvesMinor ? (document.getElementById('guardian-first')?.value?.trim() + ' ' + (document.getElementById('guardian-last')?.value?.trim() || '')) : '';
+      const guardianName = involvesMinor ? ((document.getElementById('guardian-first')?.value?.trim() || '') + ' ' + (document.getElementById('guardian-last')?.value?.trim() || '')) : '';
 
-      if (!validateBookingFields()) return;
-      if (!validateMinorConsent()) throw new Error('Please complete the minor consent form.');
+      if (!cardName) {
+        errDiv.textContent = 'Please enter the name on your card.';
+        return;
+      }
 
+      // Create PaymentIntent
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getDepositCents(), session, name, email, referredBy, involvesMinor, minorName, guardianName }),
+        body: JSON.stringify({ amount: getDepositCents(), session, name: cardName, email, referredBy, involvesMinor, minorName, guardianName }),
       });
 
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error || `Server error (${res.status})`);
       if (!data.clientSecret) throw new Error('No client secret returned.');
 
-      // Step 2: Confirm card payment
+      // Confirm card payment
       const result = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: cardElement,
-          billing_details: { name, email: email || undefined },
+          billing_details: { name: cardName, email: email || undefined },
         }
       });
 
       if (result.error) throw new Error(result.error.message);
+
       if (result.paymentIntent?.status === 'succeeded') {
-        // Notify via Formspree
-        await notifyBooking({
-          name: document.getElementById('cardholder-name')?.value?.trim() || name,
-          email,
-          phone: document.getElementById('phone')?.value?.trim() || '',
-          session: document.getElementById('pay-session')?.textContent || 'Session',
-          referredBy: document.getElementById('referred-by')?.value?.trim() || '',
-          type: 'Paid deposit ($30)',
-        });
+        await notifyBooking({ name: cardName, email, phone, session, referredBy, type: 'Paid deposit ($30)' });
         document.getElementById('successModal').classList.add('show');
       } else {
         throw new Error('Payment did not complete. Please try again.');
