@@ -14,35 +14,49 @@ exports.handler = async (event) => {
   try {
     const { amount, session, name, email, referredBy, involvesMinor, minorName, guardianName, isFirstTime } = JSON.parse(event.body);
 
-    // ── FIRST TIME CLIENT CHECK ──
+    // FIRST TIME CLIENT CHECK
     if (isFirstTime) {
       if (!email || !email.includes('@')) {
         return { statusCode: 400, headers, body: JSON.stringify({ error: 'A valid email is required to claim your free session.' }) };
       }
 
-      // Search Stripe for any existing customer with this email
-      const existing = await stripe.customers.list({ email: email.toLowerCase().trim(), limit: 1 });
+      const cleanEmail = email.toLowerCase().trim();
+      const existing = await stripe.customers.list({ email: cleanEmail, limit: 10 });
 
       if (existing.data.length > 0) {
-        // Check if they have any previous payments
-        const charges = await stripe.charges.list({ customer: existing.data[0].id, limit: 1 });
-        if (charges.data.length > 0) {
-          return {
-            statusCode: 400,
-            headers,
-            body: JSON.stringify({ error: 'This email has already been used for a session. The first-time offer is for new clients only.' })
-          };
+        for (const customer of existing.data) {
+
+          // CHECK 1: already claimed free session
+          if (customer.metadata && customer.metadata.first_time_free === 'yes') {
+            return {
+              statusCode: 400,
+              headers,
+              body: JSON.stringify({ error: 'This email has already claimed a free session. This offer is for new clients only.' })
+            };
+          }
+
+          // CHECK 2: has previous charges
+          const charges = await stripe.charges.list({ customer: customer.id, limit: 1 });
+          if (charges.data.length > 0) {
+            return {
+              statusCode: 400,
+              headers,
+              body: JSON.stringify({ error: 'This email has already been used for a paid session.' })
+            };
+          }
+
         }
       }
 
-      // Valid first-time — create customer record to prevent reuse
+      // Valid first-time client — record them
       await stripe.customers.create({
-        email: email.toLowerCase().trim(),
+        email: cleanEmail,
         name: name || '',
         metadata: {
-          session_type: session || '',
           first_time_free: 'yes',
+          session_type: session || '',
           referred_by: referredBy || '',
+          claimed_at: new Date().toISOString(),
         }
       });
 
@@ -53,7 +67,7 @@ exports.handler = async (event) => {
       };
     }
 
-    // ── REGULAR PAYMENT ──
+    // REGULAR PAYMENT
     if (!amount || amount < 100) {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid amount.' }) };
     }
