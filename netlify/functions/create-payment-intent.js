@@ -12,50 +12,56 @@ exports.handler = async (event) => {
   };
 
   try {
-    const { amount, session, name, email, referredBy, involvesMinor, minorName, guardianName, isFirstTime, verifyReferralOnly } = JSON.parse(event.body);
+    const { amount, session, name, email, referredBy, involvesMinor, minorName, guardianName, checkFreeEligibility } = JSON.parse(event.body);
 
-    // ── REFERRAL VERIFICATION ──
-    if (referredBy && referredBy.trim().length > 0) {
-      const referralName = referredBy.trim().toLowerCase();
-      const allCustomers = await stripe.customers.list({ limit: 100 });
-      const match = allCustomers.data.find(c =>
-        c.name && c.name.toLowerCase().includes(referralName)
-      );
-      if (!match) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({ error: `We could not find "${referredBy}" as a registered client. Please check the name and try again.` })
-        };
-      }
-      if (verifyReferralOnly) {
-        return { statusCode: 200, headers, body: JSON.stringify({ valid: true }) };
-      }
-    }
-
-    // ── FIRST TIME CLIENT CHECK ──
-    if (isFirstTime) {
+    // ── FREE SESSION ELIGIBILITY CHECK ──
+    if (checkFreeEligibility) {
       if (!email || !email.includes('@')) {
-        return { statusCode: 400, headers, body: JSON.stringify({ error: 'A valid email is required to claim your free session.' }) };
+        return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid email address.' }) };
       }
+
       const cleanEmail = email.toLowerCase().trim();
+
+      // Check if this email has already paid for a session
       const existing = await stripe.customers.list({ email: cleanEmail, limit: 10 });
       if (existing.data.length > 0) {
         for (const customer of existing.data) {
+          // Already used free session
           if (customer.metadata && customer.metadata.first_time_free === 'yes') {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'This email has already claimed a free session. This offer is for new clients only.' }) };
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'This email has already claimed a free session.' }) };
           }
+          // Already paid for a session
           const charges = await stripe.charges.list({ customer: customer.id, limit: 1 });
           if (charges.data.length > 0) {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'This email has already been used for a paid session.' }) };
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'This email has already booked a session. The free offer is for new clients only.' }) };
           }
         }
       }
+
+      // If referral name provided, verify it exists in Stripe
+      if (referredBy && referredBy.trim().length > 0) {
+        const referralName = referredBy.trim().toLowerCase();
+        const allCustomers = await stripe.customers.list({ limit: 100 });
+        const match = allCustomers.data.find(c =>
+          c.name && c.name.toLowerCase().includes(referralName)
+        );
+        if (!match) {
+          return { statusCode: 400, headers, body: JSON.stringify({ error: `We could not find "${referredBy}" as a registered client. Please check the spelling and try again.` }) };
+        }
+        // Referral is valid — free session approved
+        await stripe.customers.create({
+          email: cleanEmail, name: name || '',
+          metadata: { first_time_free: 'yes', session_type: session || '', referred_by: referredBy, claimed_at: new Date().toISOString() }
+        });
+        return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'referral' }) };
+      }
+
+      // No referral — first time client free session
       await stripe.customers.create({
         email: cleanEmail, name: name || '',
-        metadata: { first_time_free: 'yes', session_type: session || '', referred_by: referredBy || '', claimed_at: new Date().toISOString() }
+        metadata: { first_time_free: 'yes', session_type: session || '', referred_by: '', claimed_at: new Date().toISOString() }
       });
-      return { statusCode: 200, headers, body: JSON.stringify({ firstTimeFree: true, message: 'Free session confirmed.' }) };
+      return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'first_time' }) };
     }
 
     // ── REGULAR PAYMENT ──
