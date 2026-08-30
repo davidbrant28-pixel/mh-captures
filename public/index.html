@@ -1667,7 +1667,7 @@
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getDepositCents(), session, name: cardName, email, referredBy, involvesMinor, minorName, guardianName }),
+        body: JSON.stringify({ amount: getDepositCents(), session, name: cardName, email, phone, referredBy, involvesMinor, minorName, guardianName }),
       });
 
       const data = await res.json();
