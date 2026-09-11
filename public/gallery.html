@@ -8,17 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #0a0a0a;
-    --text: #d4af37;
-    --text-sec: #c9a227;
-    --text-muted: #a08830;
-    --border: rgba(212,175,55,0.15);
-    --radius: 0px;
-  }
+  :root { --bg: #0a0a0a; --text: #d4af37; --text-sec: #c9a227; --text-muted: #a08830; --border: rgba(212,175,55,0.15); }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
-
-  /* NAV */
   nav {
     position: sticky; top: 0; z-index: 100;
     display: flex; justify-content: space-between; align-items: center;
@@ -27,125 +18,34 @@
     border-bottom: 0.5px solid var(--border);
     backdrop-filter: blur(8px);
   }
-  .nav-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px; font-weight: 400;
-    letter-spacing: 0.08em; color: var(--text);
-    text-decoration: none;
-  }
+  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; letter-spacing: 0.08em; color: var(--text); text-decoration: none; }
   .nav-logo span { font-style: italic; color: #a08c2a; }
-  .nav-back {
-    font-size: 13px; color: var(--text-muted);
-    text-decoration: none; transition: color 0.2s;
-  }
+  .nav-back { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
   .nav-back:hover { color: var(--text); }
-
-  /* HEADER */
-  .gallery-header {
-    text-align: center;
-    padding: 3rem 1rem 2rem;
-    border-bottom: 0.5px solid var(--border);
-  }
+  .gallery-header { text-align: center; padding: 3rem 1rem 2rem; border-bottom: 0.5px solid var(--border); }
   .gallery-header p { font-size: 11px; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; }
-  .gallery-header h1 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 42px; font-weight: 300; color: var(--text);
-  }
+  .gallery-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; }
   .gallery-header h1 em { font-style: italic; }
-
-  /* FILTERS */
-  .filter-bar {
-    display: flex; gap: 8px; justify-content: center;
-    flex-wrap: wrap; padding: 1.5rem 1rem;
-    border-bottom: 0.5px solid var(--border);
-  }
-  .ftab {
-    padding: 7px 18px; font-size: 13px;
-    font-family: 'DM Sans', sans-serif;
-    border: 0.5px solid rgba(212,175,55,0.4);
-    background: transparent; color: var(--text-muted);
-    cursor: pointer; transition: all 0.15s;
-  }
+  .filter-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 1.5rem 1rem; border-bottom: 0.5px solid var(--border); }
+  .ftab { padding: 7px 18px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 0.5px solid rgba(212,175,55,0.4); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
   .ftab.active { background: #d4af37; color: #0a0a0a; border-color: #d4af37; }
   .ftab:hover:not(.active) { color: var(--text); border-color: var(--text); }
-
-  /* GALLERY GRID */
-  .gallery-grid {
-    columns: 3; gap: 4px;
-    padding: 1rem;
-  }
-  .gallery-item {
-    break-inside: avoid;
-    margin-bottom: 4px;
-    overflow: hidden;
-    cursor: pointer;
-    position: relative;
-  }
-  .gallery-item img {
-    width: 100%; display: block;
-    transition: transform 0.5s ease;
-  }
+  .gallery-grid { columns: 3; gap: 4px; padding: 1rem; }
+  .gallery-item { break-inside: avoid; margin-bottom: 4px; overflow: hidden; cursor: pointer; position: relative; }
+  .gallery-item img { width: 100%; display: block; transition: transform 0.5s ease; }
   .gallery-item:hover img { transform: scale(1.04); }
-
-  /* LOADING */
-  .loading {
-    text-align: center; padding: 4rem 1rem;
-    font-size: 14px; color: var(--text-muted);
-  }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 2px solid rgba(212,175,55,0.2);
-    border-top-color: #d4af37;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 1rem;
-  }
+  .loading { text-align: center; padding: 4rem 1rem; font-size: 14px; color: var(--text-muted); }
+  .spinner { width: 32px; height: 32px; border: 2px solid rgba(212,175,55,0.2); border-top-color: #d4af37; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* LIGHTBOX */
-  .lightbox {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.95); z-index: 200;
-    align-items: center; justify-content: center;
-    padding: 1rem;
-  }
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
   .lightbox.show { display: flex; }
-  .lightbox img {
-    max-width: 100%; max-height: 90vh;
-    object-fit: contain;
-  }
-  .lightbox-close {
-    position: absolute; top: 1rem; right: 1.25rem;
-    font-size: 28px; color: var(--text-muted);
-    cursor: pointer; background: none; border: none;
-    transition: color 0.2s;
-  }
-  .lightbox-close:hover { color: var(--text); }
-  .lightbox-prev, .lightbox-next {
-    position: absolute; top: 50%; transform: translateY(-50%);
-    font-size: 28px; color: var(--text-muted);
-    cursor: pointer; background: none; border: none;
-    transition: color 0.2s; padding: 1rem;
-  }
-  .lightbox-prev { left: 0.5rem; }
-  .lightbox-next { right: 0.5rem; }
-  .lightbox-prev:hover, .lightbox-next:hover { color: var(--text); }
-
-  /* EMPTY STATE */
-  .empty {
-    text-align: center; padding: 4rem 1rem;
-    font-size: 14px; color: var(--text-muted);
-  }
-
-  /* FOOTER */
-  footer {
-    text-align: center; padding: 2rem 1rem;
-    border-top: 0.5px solid var(--border);
-    font-size: 12px; color: var(--text-muted);
-    background: rgba(10,10,10,0.88);
-  }
-
-  /* RESPONSIVE */
+  .lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
+  .lightbox-close { position: absolute; top: 1rem; right: 1.25rem; font-size: 28px; color: var(--text-muted); cursor: pointer; background: none; border: none; }
+  .lightbox-prev, .lightbox-next { position: absolute; top: 50%; transform: translateY(-50%); font-size: 36px; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 1rem; }
+  .lightbox-prev { left: 0; }
+  .lightbox-next { right: 0; }
+  .empty { text-align: center; padding: 4rem 1rem; font-size: 14px; color: var(--text-muted); }
+  footer { text-align: center; padding: 2rem 1rem; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-muted); background: rgba(10,10,10,0.88); }
   @media (max-width: 768px) { .gallery-grid { columns: 2; } }
   @media (max-width: 480px) { .gallery-grid { columns: 1; } .gallery-header h1 { font-size: 30px; } }
 </style>
@@ -153,8 +53,8 @@
 <body>
 
 <nav>
-  <a href="index.html" class="nav-logo">MH <span>Captures/Media</span></a>
-  <a href="index.html" class="nav-back">← Back to site</a>
+  <a href="/index.html" class="nav-logo">MH <span>Captures/Media</span></a>
+  <a href="/index.html" class="nav-back">← Back to site</a>
 </nav>
 
 <div class="gallery-header">
@@ -163,17 +63,16 @@
 </div>
 
 <div class="filter-bar">
-  <button class="ftab active" onclick="loadGallery('all', this)">All</button>
-  <button class="ftab" onclick="loadGallery('Gallery', this)">General</button>
-  <button class="ftab" onclick="loadGallery('Portrait', this)">Portrait</button>
-  <button class="ftab" onclick="loadGallery('Sports', this)">Sports</button>
+  <button class="ftab active" onclick="showFolder('all', this)">All</button>
+  <button class="ftab" onclick="showFolder('Gallery', this)">General</button>
+  <button class="ftab" onclick="showFolder('Portrait', this)">Portrait</button>
+  <button class="ftab" onclick="showFolder('Sports', this)">Sports</button>
 </div>
 
 <div id="gallery-container">
   <div class="loading"><div class="spinner"></div>Loading photos…</div>
 </div>
 
-<!-- Lightbox -->
 <div class="lightbox" id="lightbox">
   <button class="lightbox-close" onclick="closeLightbox()">×</button>
   <button class="lightbox-prev" onclick="changePhoto(-1)">‹</button>
@@ -184,49 +83,69 @@
 <footer>© 2026 MH Captures/Media · London, Ontario</footer>
 
 <script>
-  const CLOUD_NAME = 'xd3izve2';
-  const FOLDERS = ['Gallery', 'Portrait', 'Sports'];
+  const CLOUD = 'xd3izve2';
+  const FOLDERS = {
+    'Gallery': [],
+    'Portrait': [],
+    'Sports': [],
+  };
+
   let allPhotos = [];
   let currentPhotos = [];
   let currentIndex = 0;
+  let loaded = false;
 
-  async function fetchFolder(folder) {
-    try {
-      const res = await fetch(`https://res.cloudinary.com/${CLOUD_NAME}/image/list/${folder}.json`);
-      if (!res.ok) return [];
-      const data = await res.json();
-      return (data.resources || []).map(r => ({
-        url: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_1200/${r.public_id}.jpg`,
-        thumb: `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/q_auto,f_auto,w_600/${r.public_id}.jpg`,
-        folder,
-        id: r.public_id,
-      }));
-    } catch { return []; }
+  // Build URL for a cloudinary image
+  function imgUrl(publicId, width) {
+    return `https://res.cloudinary.com/${CLOUD}/image/upload/q_auto,f_auto,w_${width}/${publicId}`;
   }
 
-  async function loadGallery(filter, btn) {
-    // Update active tab
+  async function loadAll() {
+    if (loaded) return;
+    // Use the folder listing endpoint with a tag-based approach
+    // We'll try each folder using the upload API list endpoint
+    const folderNames = ['Gallery', 'Portrait', 'Sports'];
+
+    for (const folder of folderNames) {
+      try {
+        const res = await fetch(
+          `https://res.cloudinary.com/${CLOUD}/image/list/${folder}.json`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const photos = (data.resources || []).map(r => ({
+            id: r.public_id,
+            folder,
+            thumb: imgUrl(r.public_id, 600),
+            full: imgUrl(r.public_id, 1400),
+          }));
+          FOLDERS[folder] = photos;
+          allPhotos = [...allPhotos, ...photos];
+        }
+      } catch(e) {
+        console.log('Folder error:', folder, e);
+      }
+    }
+    loaded = true;
+  }
+
+  async function showFolder(filter, btn) {
     document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
     if (btn) btn.classList.add('active');
 
     const container = document.getElementById('gallery-container');
     container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading photos…</div>';
 
-    // Fetch all folders if needed
-    if (allPhotos.length === 0) {
-      const results = await Promise.all(FOLDERS.map(f => fetchFolder(f)));
-      allPhotos = results.flat();
-    }
+    await loadAll();
 
-    // Filter
-    currentPhotos = filter === 'all' ? allPhotos : allPhotos.filter(p => p.folder === filter);
+    currentPhotos = filter === 'all' ? allPhotos : FOLDERS[filter] || [];
 
     if (currentPhotos.length === 0) {
-      container.innerHTML = '<div class="empty">No photos in this category yet.</div>';
+      container.innerHTML = '<div class="empty">No photos in this category yet.<br><br>Make sure photos are uploaded to Cloudinary and tags are enabled.</div>';
       return;
     }
 
-    // Render grid
     const grid = document.createElement('div');
     grid.className = 'gallery-grid';
     currentPhotos.forEach((photo, i) => {
@@ -240,9 +159,9 @@
     container.appendChild(grid);
   }
 
-  function openLightbox(index) {
-    currentIndex = index;
-    document.getElementById('lightbox-img').src = currentPhotos[index].url;
+  function openLightbox(i) {
+    currentIndex = i;
+    document.getElementById('lightbox-img').src = currentPhotos[i].full;
     document.getElementById('lightbox').classList.add('show');
     document.body.style.overflow = 'hidden';
   }
@@ -254,23 +173,21 @@
 
   function changePhoto(dir) {
     currentIndex = (currentIndex + dir + currentPhotos.length) % currentPhotos.length;
-    document.getElementById('lightbox-img').src = currentPhotos[currentIndex].url;
+    document.getElementById('lightbox-img').src = currentPhotos[currentIndex].full;
   }
 
-  // Keyboard navigation
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeLightbox();
     if (e.key === 'ArrowRight') changePhoto(1);
     if (e.key === 'ArrowLeft') changePhoto(-1);
   });
 
-  // Click outside lightbox to close
   document.getElementById('lightbox').addEventListener('click', e => {
     if (e.target === document.getElementById('lightbox')) closeLightbox();
   });
 
   // Load on start
-  loadGallery('all', document.querySelector('.ftab'));
+  showFolder('all', document.querySelector('.ftab'));
 </script>
 </body>
 </html>
