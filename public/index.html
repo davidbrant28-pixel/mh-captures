@@ -806,25 +806,25 @@
     <h2 class="section-title">Choose your <em>session</em></h2>
   </div>
   <div class="services-grid">
-    <div class="service-card selected" onclick="selectService(this,'Portrait',150,'1.5 hrs')">
+    <div class="service-card selected" onclick="selectService(this,'Portrait',100,'1.5 hrs')">
       <div class="service-icon">&#9711;</div>
       <div class="service-name">Portrait</div>
       <div class="service-desc">Individual or couple portraits at a location of your choice.</div>
-      <div class="service-price">From $150</div>
+      <div class="service-price">From $100</div>
       <div class="service-duration">1.5 hours · 25 edited images</div>
     </div>
-    <div class="service-card" onclick="selectService(this,'Family',250,'2 hrs')">
+    <div class="service-card" onclick="selectService(this,'Family',175,'2 hrs')">
       <div class="service-icon">&#9825;</div>
       <div class="service-name">Family</div>
       <div class="service-desc">Relaxed family sessions at an outdoor location. Great for all ages and group sizes.</div>
-      <div class="service-price">From $250</div>
+      <div class="service-price">From $175</div>
       <div class="service-duration">2 hours · 40 edited images</div>
     </div>
-    <div class="service-card" onclick="selectService(this,'Sports',300,'3 hrs')">
+    <div class="service-card" onclick="selectService(this,'Sports',200,'3 hrs')">
       <div class="service-icon">&#9651;</div>
       <div class="service-name">Sports</div>
       <div class="service-desc">Action and event coverage for athletes, teams, and competitions.</div>
-      <div class="service-price">From $300</div>
+      <div class="service-price">From $200</div>
       <div class="service-duration">3 hours · Full resolution files</div>
     </div>
   </div>
@@ -937,9 +937,9 @@
       <div class="form-row">
         <label>Session type</label>
         <select id="session-type" onchange="updateFromSelect()">
-          <option value="Portrait|150|1.5 hrs">Portrait — from $150</option>
-          <option value="Family|250|2 hrs">Family — from $250</option>
-          <option value="Sports|300|3 hrs">Sports — from $300</option>
+          <option value="Portrait|150|1.5 hrs">Portrait — from $100</option>
+          <option value="Family|250|2 hrs">Family — from $175</option>
+          <option value="Sports|300|3 hrs">Sports — from $200</option>
         </select>
       </div>
       <div class="form-row">
@@ -1244,7 +1244,7 @@
 
 <script>
   /* ── BOOKING LOGIC ── */
-  let basePrice = 150, pkgAdd = 0, sessionName = 'Portrait';
+  let basePrice = 100, pkgAdd = 0, sessionName = 'Portrait';
 
   function selectService(el, name, price, duration) {
     document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
