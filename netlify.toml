@@ -3,7 +3,16 @@
   functions = "netlify/functions"
 
 [[redirects]]
+  from = "/gallery"
+  to = "/gallery.html"
+  status = 200
+
+[[redirects]]
+  from = "/*.html"
+  to = "/:splat.html"
+  status = 200
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
-  force = false
