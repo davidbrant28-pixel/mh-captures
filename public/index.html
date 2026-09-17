@@ -765,7 +765,7 @@
   <a href="#" class="nav-logo">MH <span>Captures/Media</span></a>
   <div class="nav-links">
     <a href="#portfolio">Portfolio</a>
-    <a href="gallery.html">Gallery</a>
+    <a href="/gallery.html">Gallery</a>
     <a href="#services">Services</a>
     <a href="#faq">FAQ</a>
     <button class="nav-cta" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book now</button>
@@ -923,7 +923,6 @@
         <li><span class="icon">✓</span> 10–15 edited photos</li>
         <li><span class="icon">✓</span> One location</li>
         <li><span class="icon">✓</span> High-res downloads</li>
-        <li><span class="icon">✓</span> Private gallery</li>
       </ul>
     </div>
     <div class="booking-form">
@@ -977,14 +976,16 @@
       <div id="minor-consent-section" style="display:none;border:0.5px solid rgba(212,175,55,0.4);padding:1.25rem;margin-bottom:1rem;background:#0a0a0a;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.75rem;">
           <span style="font-size:18px;">⚠️</span>
-          <span style="font-size:13px;font-weight:600;color:#d4af37;letter-spacing:0.04em;text-transform:uppercase;">Minor Consent Required</span>
+          <span style="font-size:13px;font-weight:600;color:#d4af37;letter-spacing:0.04em;text-transform:uppercase;">Sports Session — Participant Age</span>
         </div>
-        <p style="font-size:13px;color:#c9a227;line-height:1.7;margin-bottom:1rem;">If any participants in this sports session are under 18, a parent or legal guardian must complete this consent form before photography begins.</p>
+        <p style="font-size:13px;color:#c9a227;line-height:1.7;margin-bottom:1rem;">Please enter the date of birth of the participant. If they are under 18, a parent or guardian consent form is required.</p>
 
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.75rem;">
-          <input type="checkbox" id="involves-minor" onchange="toggleMinorForm(this)" style="flex-shrink:0;">
-          <label for="involves-minor" style="font-size:13px;color:#c9a227;cursor:pointer;">This session involves a minor (under 18)</label>
+        <div class="form-row">
+          <label>Participant date of birth <span style="color:#d4af37;">*</span></label>
+          <input type="date" id="participant-dob" onchange="checkParticipantAge(this)" style="width:100%;padding:10px 13px;background:#111111;border:0.5px solid rgba(212,175,55,0.3);font-family:'DM Sans',sans-serif;font-size:16px;color:#d4af37;outline:none;">
         </div>
+
+        <div id="age-result" style="font-size:13px;margin-bottom:0.75rem;display:none;"></div>
 
         <div id="minor-form" style="display:none;border-top:0.5px solid rgba(212,175,55,0.2);padding-top:1rem;margin-top:0.5rem;">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:0.75rem;">
@@ -993,7 +994,6 @@
           </div>
           <div class="form-row"><label>Parent/Guardian email</label><input type="email" id="guardian-email" placeholder="jane@example.com"></div>
           <div class="form-row"><label>Minor's full name</label><input type="text" id="minor-name" placeholder="Full name of the minor"></div>
-          <div class="form-row"><label>Minor's age</label><input type="number" id="minor-age" placeholder="e.g. 14" min="1" max="17"></div>
 
           <div style="background:#111111;border:0.5px solid rgba(212,175,55,0.2);padding:1rem;font-size:12px;color:#a08c2a;line-height:1.8;margin-bottom:1rem;">
             <strong style="color:#d4af37;display:block;margin-bottom:6px;">Photo Release & Consent Agreement</strong>
@@ -1043,7 +1043,6 @@
       <div class="pay-card">AMEX</div>
       <div class="pay-card">Apple Pay</div>
       <div class="pay-card">Google Pay</div>
-      <div class="pay-card">PayPal</div>
     </div>
 
     <!-- Stripe Payment Request Button (Apple Pay / Google Pay) -->
@@ -1155,7 +1154,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Do you offer prints or albums? <span class="faq-icon">&#8964;</span></button>
-        <div class="faq-a">At this time, physical prints and albums are not available. All edited images are delivered digitally through your private online gallery as high-resolution downloads, ready for you to print wherever you like.</div>
+        <div class="faq-a">At this time, physical prints and albums are not available. All edited images are delivered digitally as high-resolution downloads, ready for you to print wherever you like.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">What if the weather is bad on my shoot day? <span class="faq-icon">&#8964;</span></button>
@@ -1224,7 +1223,7 @@
   <div class="footer-links">
     <a href="https://www.instagram.com/mh_captures_media/?hl=en" target="_blank">Instagram</a>
     <a href="https://www.facebook.com/mhcapturesmedia" target="_blank">Facebook</a>
-    <a href="gallery.html">Gallery</a>
+    <a href="/gallery.html">Gallery</a>
     <a href="#portfolio">Portfolio</a>
     <a href="#promotions">Promotions</a>
     <a href="#inquiries">Inquiries</a>
@@ -1256,7 +1255,6 @@
     for (let i = 0; i < sel.options.length; i++) {
       if (sel.options[i].value.startsWith(name)) { sel.selectedIndex = i; break; }
     }
-    // Show minor consent section for Sports only
     const consentSection = document.getElementById('minor-consent-section');
     if (consentSection) consentSection.style.display = name === 'Sports' ? 'block' : 'none';
     if (name !== 'Sports') {
@@ -1266,6 +1264,8 @@
       if (minorCheck) minorCheck.checked = false;
     }
     updateSummary();
+    // Scroll to booking form
+    document.getElementById('booking').scrollIntoView({ behavior: 'smooth' });
   }
 
   function updateFromSelect() {
@@ -1411,6 +1411,36 @@
     }
   }
 
+  function checkParticipantAge(input) {
+    const dob = new Date(input.value);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+
+    const ageResult = document.getElementById('age-result');
+    const minorForm = document.getElementById('minor-form');
+
+    if (isNaN(age) || age < 0 || age > 100) {
+      ageResult.style.display = 'none';
+      minorForm.style.display = 'none';
+      return;
+    }
+
+    ageResult.style.display = 'block';
+
+    if (age < 18) {
+      ageResult.innerHTML = `<span style="color:#e87070;">Participant is ${age} years old — parental consent required.</span>`;
+      minorForm.style.display = 'block';
+      // Auto-fill minor age
+      const minorAgeEl = document.getElementById('minor-age');
+      if (minorAgeEl) minorAgeEl.value = age;
+    } else {
+      ageResult.innerHTML = `<span style="color:#d4af37;">Participant is ${age} years old — no consent required.</span>`;
+      minorForm.style.display = 'none';
+    }
+  }
+
   function toggleMinorForm(checkbox) {
     const minorForm = document.getElementById('minor-form');
     if (minorForm) minorForm.style.display = checkbox.checked ? 'block' : 'none';
@@ -1418,17 +1448,26 @@
 
   function validateMinorConsent() {
     if (sessionName !== 'Sports') return true;
-    const involvesMinor = document.getElementById('involves-minor')?.checked;
-    if (!involvesMinor) return true;
-    const guardianFirst = document.getElementById('guardian-first')?.value?.trim();
-    const guardianEmail = document.getElementById('guardian-email')?.value?.trim();
-    const minorName = document.getElementById('minor-name')?.value?.trim();
-    const minorAge = document.getElementById('minor-age')?.value;
-    const agreed = document.getElementById('consent-agreed')?.checked;
-    const signature = document.getElementById('guardian-signature')?.value?.trim();
-    if (!guardianFirst || !guardianEmail || !minorName || !minorAge || !agreed || !signature) {
-      alert('Please complete the minor consent form before continuing.');
+
+    const dob = document.getElementById('participant-dob')?.value;
+    if (!dob) {
+      alert('Please enter the participant\'s date of birth to continue.');
+      document.getElementById('participant-dob')?.focus();
       return false;
+    }
+
+    const minorForm = document.getElementById('minor-form');
+    if (minorForm && minorForm.style.display !== 'none') {
+      const guardianFirst = document.getElementById('guardian-first')?.value?.trim();
+      const guardianEmail = document.getElementById('guardian-email')?.value?.trim();
+      const minorName = document.getElementById('minor-name')?.value?.trim();
+      const agreed = document.getElementById('consent-agreed')?.checked;
+      const signature = document.getElementById('guardian-signature')?.value?.trim();
+
+      if (!guardianFirst || !guardianEmail || !minorName || !agreed || !signature) {
+        alert('Please complete the minor consent form before continuing.');
+        return false;
+      }
     }
     return true;
   }
@@ -1439,14 +1478,12 @@
       '10–15 edited photos',
       'One location',
       'High-res downloads',
-      'Private gallery',
     ],
     150: [
       '1 hour session',
       '20–30 edited photos',
       'Up to 2 locations',
       'High-res downloads',
-      'Private gallery',
       'Pre-session consultation',
     ],
     350: [
@@ -1454,7 +1491,6 @@
       '40–50 edited photos',
       'Multiple locations',
       'High-res downloads',
-      'Private gallery',
       'Pre-session consultation',
       'Priority 24hr delivery',
       'Outfit change included',
