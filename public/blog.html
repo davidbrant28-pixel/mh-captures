@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Blog — MH Captures/Media</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #0a0a0a; --text: #d4af37; --text-sec: #c9a227; --text-muted: #a08830; --border: rgba(212,175,55,0.15); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.85rem 1.5rem;
+    background: rgba(10,10,10,0.88);
+    border-bottom: 0.5px solid var(--border);
+    backdrop-filter: blur(8px);
+  }
+  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; letter-spacing: 0.08em; color: var(--text); text-decoration: none; }
+  .nav-logo span { font-style: italic; color: #a08c2a; }
+  .nav-back { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--text); }
+
+  .blog-header { text-align: center; padding: 3rem 1rem 2rem; border-bottom: 0.5px solid var(--border); }
+  .blog-header p { font-size: 11px; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; }
+  .blog-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; }
+  .blog-header h1 em { font-style: italic; }
+
+  .blog-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin: 2rem 1rem;
+  }
+
+  .blog-card {
+    background: #0a0a0a;
+    padding: 2rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    text-decoration: none;
+    display: block;
+  }
+  .blog-card:hover { background: rgba(212,175,55,0.04); }
+
+  .blog-tag {
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+  .blog-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 300;
+    line-height: 1.2; color: var(--text);
+    margin-bottom: 0.75rem;
+  }
+  .blog-title em { font-style: italic; }
+  .blog-excerpt { font-size: 13px; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.25rem; }
+  .blog-meta { font-size: 11px; color: var(--text-muted); display: flex; justify-content: space-between; border-top: 0.5px solid var(--border); padding-top: 1rem; }
+  .read-more { font-size: 12px; color: var(--text-sec); }
+
+  /* Single post view */
+  .post-view { display: none; max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem; }
+  .post-view.active { display: block; }
+  .blog-list { }
+  .blog-list.hidden { display: none; }
+
+  .post-back { font-size: 13px; color: var(--text-muted); cursor: pointer; margin-bottom: 2rem; display: inline-block; }
+  .post-back:hover { color: var(--text); }
+  .post-tag { font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+  .post-title { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 300; line-height: 1.15; margin-bottom: 1rem; }
+  .post-title em { font-style: italic; }
+  .post-date { font-size: 12px; color: var(--text-muted); margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
+  .post-body { font-size: 15px; color: var(--text-sec); line-height: 1.9; }
+  .post-body p { margin-bottom: 1.25rem; }
+  .post-body h2 { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 300; color: var(--text); margin: 2rem 0 1rem; }
+
+  footer { text-align: center; padding: 2rem 1rem; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-muted); background: rgba(10,10,10,0.88); margin-top: 3rem; }
+
+  @media (max-width: 900px) { .blog-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .blog-grid { grid-template-columns: 1fr; } .blog-header h1 { font-size: 30px; } .post-title { font-size: 28px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/index.html" class="nav-logo">MH <span>Captures/Media</span></a>
+  <a href="/index.html" class="nav-back">← Back to site</a>
+</nav>
+
+<div class="blog-header">
+  <p>MH Captures/Media</p>
+  <h1>The <em>Blog</em></h1>
+</div>
+
+<!-- Blog List -->
+<div class="blog-list" id="blog-list">
+  <div class="blog-grid" id="blog-grid"></div>
+</div>
+
+<!-- Single Post View -->
+<div class="post-view" id="post-view">
+  <span class="post-back" onclick="showList()">← Back to blog</span>
+  <div class="post-tag" id="post-tag"></div>
+  <h1 class="post-title" id="post-title"></h1>
+  <div class="post-date" id="post-date"></div>
+  <div class="post-body" id="post-body"></div>
+</div>
+
+<footer>© 2026 MH Captures/Media · London, Ontario · <a href="/index.html" style="color:var(--text-muted);text-decoration:none;">mhcapturesmedia.com</a></footer>
+
+<script>
+const posts = [
+  {
+    id: 1,
+    tag: 'Getting Started',
+    title: 'Why I Started <em>MH Captures/Media</em>',
+    excerpt: 'Every photographer has a reason they picked up a camera for the first time. Here is mine.',
+    date: 'September 2026',
+    body: `
+      <p>I did not start photography because I thought it would become a business. I started because I noticed things other people walked past.</p>
+      <p>A field at golden hour. A building that catches the light in a way that only happens for a few minutes a day. A moment between people that is over before most people realize it happened.</p>
+      <p>Photography gave me a reason to stop and pay attention. And the more I paid attention, the better the photos got.</p>
+      <h2>Starting MH Captures/Media</h2>
+      <p>MH Captures/Media started as a way to take what I was already doing — going out with a camera and coming back with something worth looking at — and make it available to people in London, Ontario who wanted the same thing for themselves.</p>
+      <p>Portraits, family sessions, sports coverage. Real people, real light, real moments. That is what this business is built on.</p>
+      <h2>What to Expect</h2>
+      <p>If you book a session with me, you are not getting a studio setup with props and posing guides. You are getting someone who knows how to find good light, knows when to shoot and when to wait, and knows how to make you look natural in front of a camera.</p>
+      <p>Sessions start at $100. First time clients book free. If you have been thinking about it, reach out at mhcapturesmedia.com.</p>
+    `
+  },
+  {
+    id: 2,
+    tag: 'Tips',
+    title: 'What to Wear for Your <em>Portrait Session</em>',
+    excerpt: 'One of the most common questions I get before a session. Here is a straightforward answer.',
+    date: 'September 2026',
+    body: `
+      <p>Most people overthink this. The goal is simple — wear something you feel good in and that does not distract from your face.</p>
+      <h2>Colours That Work</h2>
+      <p>Neutral tones work best for outdoor sessions. Earthy colours, muted greens, navy, burgundy, cream. These photograph well in natural light and do not pull attention away from you.</p>
+      <p>Avoid bright white if you are shooting in direct sunlight — it can blow out in photos. Also avoid very busy patterns, large logos, or anything with heavy graphics on the front.</p>
+      <h2>Layers Work Well</h2>
+      <p>A jacket, cardigan or denim layer over a simple top gives you more variety without changing your whole outfit. We can shoot with it on and off and get two different looks from the same session.</p>
+      <h2>Comfort Matters</h2>
+      <p>If you are uncomfortable in what you are wearing, it shows in the photos. Wear something you would actually go out in. The more natural you feel, the more natural the photos look.</p>
+      <h2>When in Doubt</h2>
+      <p>If you are not sure, send me a message before your session. I am happy to give feedback on what you are thinking of wearing. Book at mhcapturesmedia.com.</p>
+    `
+  },
+  {
+    id: 3,
+    tag: 'London Ontario',
+    title: 'Best Outdoor Photo Spots in <em>London, Ontario</em>',
+    excerpt: 'After shooting across the city, these are the locations I keep coming back to.',
+    date: 'September 2026',
+    body: `
+      <p>London, Ontario has more to offer photographers than most people realize. Here are the spots I go back to consistently.</p>
+      <h2>Springbank Park</h2>
+      <p>One of the best all-season locations in the city. The Thames River, open fields, tree canopy and walking paths give you a lot of variety in one spot. Works well for families, couples and individual portraits.</p>
+      <h2>Fanshawe Conservation Area</h2>
+      <p>Great for wider landscape shots and golden hour sessions. The lake and open sky give you incredible light in the evening. Good for a more relaxed, natural feel.</p>
+      <h2>Old East Village</h2>
+      <p>If you want something with more texture — brick walls, murals, street character — Old East is worth exploring. Good for editorial style portraits and commercial work.</p>
+      <h2>Rural Roads Outside the City</h2>
+      <p>Some of my favourite shots have come from driving just outside London. Fields, barns, open sky and almost no people. The light out here is different and the photos show it.</p>
+      <h2>Book a Session</h2>
+      <p>If you have a location in mind or want me to pick the spot, either works. Sessions start at $100 and first time clients shoot free. Book at mhcapturesmedia.com.</p>
+    `
+  },
+  {
+    id: 4,
+    tag: 'Sports',
+    title: 'Why Sports Photography <em>Matters</em>',
+    excerpt: 'Action shots are more than just catching a ball in mid-air. Here is what I actually look for.',
+    date: 'September 2026',
+    body: `
+      <p>Sports photography is not about having the fastest camera. It is about knowing what is about to happen before it happens.</p>
+      <p>After covering enough games and practices, you start to read the play. You know where the action is going before it gets there. That is when you get the real shots — not the ball in the air, but the face of the athlete right before or right after.</p>
+      <h2>What Parents Actually Want</h2>
+      <p>Most parents at a game are trying to get a decent photo on their phone from the sideline. The light is bad, the distance is wrong, and by the time they press the button the moment is already gone.</p>
+      <p>Professional sports photography gives you images that actually reflect how hard your athlete works. Sharp, well-lit, properly framed shots that are worth printing and keeping.</p>
+      <h2>What I Cover</h2>
+      <p>I cover individual athletes, teams, practices and games in the London, Ontario area. Sports sessions start at $200. If you want to talk about covering your team or your child, reach out at mhcapturesmedia.com.</p>
+    `
+  },
+  {
+    id: 5,
+    tag: 'Family',
+    title: 'The Best Time of Year for <em>Family Photos</em>',
+    excerpt: 'Every season has something going for it. Here is an honest breakdown.',
+    date: 'September 2026',
+    body: `
+      <p>There is no wrong time to get family photos done, but there are some times that are easier than others.</p>
+      <h2>Fall</h2>
+      <p>The most popular season for a reason. The colours in London, Ontario peak between late September and mid-October. The light is softer, the air is cooler and everyone tends to look good in autumn tones. Book early — spots fill up fast.</p>
+      <h2>Spring</h2>
+      <p>Green is back, the light is fresh and the parks are not crowded yet. Good option if you missed fall or want something that feels a bit lighter and brighter.</p>
+      <h2>Summer</h2>
+      <p>The challenge with summer is the light. Midday sun is harsh and unflattering. If you want summer photos, book a session for early morning or the last hour before sunset. The results are worth the timing.</p>
+      <h2>Winter</h2>
+      <p>Underrated. A fresh snow and the right location can produce some of the most striking family photos of the year. The key is dressing properly and moving fast before everyone gets cold.</p>
+      <h2>Book Your Session</h2>
+      <p>Family sessions start at $175. First time clients shoot free. Book at mhcapturesmedia.com before your preferred season fills up.</p>
+    `
+  },
+  {
+    id: 6,
+    tag: 'Behind the Scenes',
+    title: 'What Actually Happens <em>After the Shoot</em>',
+    excerpt: 'The session is just the beginning. Here is what goes into editing and delivery.',
+    date: 'September 2026',
+    body: `
+      <p>A lot of people are surprised by how much work happens after the camera goes away.</p>
+      <h2>Culling</h2>
+      <p>The first step is going through every single photo from the session and removing anything that does not make the cut — bad focus, closed eyes, awkward expressions. From a typical portrait session I might take 200 to 300 shots and keep the best 30 to 50 to edit.</p>
+      <h2>Editing</h2>
+      <p>Each photo gets individual attention. Exposure, contrast, colour grading, skin tones, sharpness. The goal is to make the photo look like the best version of the moment — not over-edited, not filtered, just clean and natural.</p>
+      <h2>Delivery</h2>
+      <p>Edited photos are delivered as high-resolution digital files within 48 hours of your session. You get files that are large enough to print at any size and sharp enough to look good anywhere you use them.</p>
+      <h2>Book a Session</h2>
+      <p>Portrait sessions start at $100. Family sessions start at $175. Sports sessions start at $200. First time clients book free. Visit mhcapturesmedia.com to get started.</p>
+    `
+  },
+];
+
+function renderList() {
+  const grid = document.getElementById('blog-grid');
+  grid.innerHTML = posts.map((post, i) => `
+    <a class="blog-card" onclick="showPost(${i})" href="javascript:void(0)">
+      <div class="blog-tag">${post.tag}</div>
+      <div class="blog-title">${post.title}</div>
+      <div class="blog-excerpt">${post.excerpt}</div>
+      <div class="blog-meta">
+        <span>${post.date}</span>
+        <span class="read-more">Read →</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+function showPost(index) {
+  const post = posts[index];
+  document.getElementById('post-tag').textContent = post.tag;
+  document.getElementById('post-title').innerHTML = post.title;
+  document.getElementById('post-date').textContent = post.date;
+  document.getElementById('post-body').innerHTML = post.body;
+  document.getElementById('blog-list').classList.add('hidden');
+  document.getElementById('post-view').classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showList() {
+  document.getElementById('blog-list').classList.remove('hidden');
+  document.getElementById('post-view').classList.remove('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderList();
+</script>
+</body>
+</html>
