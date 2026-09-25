@@ -824,11 +824,11 @@
       <div class="service-price">From $100</div>
       <div class="service-duration">1.5 hours · 25 edited images</div>
     </div>
-    <div class="service-card" onclick="selectService(this,'Family',175,'2 hrs')">
+    <div class="service-card" onclick="selectService(this,'Family',87.50,'2 hrs')">
       <div class="service-icon">&#9825;</div>
       <div class="service-name">Family</div>
       <div class="service-desc">Relaxed family sessions at an outdoor location. Great for all ages and group sizes.</div>
-      <div class="service-price">From $175</div>
+      <div class="service-price"><span style="text-decoration:line-through;color:var(--text-muted);font-size:11px;">$175</span> <span style="color:#d4af37;">$87.50</span> <span style="font-size:10px;color:#a08c2a;">Fall special</span></div>
       <div class="service-duration">2 hours · 40 edited images</div>
     </div>
     <div class="service-card" onclick="selectService(this,'Sports',200,'3 hrs')">
@@ -948,7 +948,7 @@
         <label>Session type</label>
         <select id="session-type" onchange="updateFromSelect()">
           <option value="Portrait|150|1.5 hrs">Portrait — from $100</option>
-          <option value="Family|250|2 hrs">Family — from $175</option>
+          <option value="Family|87.50|2 hrs">Family — from $87.50 (Fall special)</option>
           <option value="Sports|300|3 hrs">Sports — from $200</option>
         </select>
       </div>
