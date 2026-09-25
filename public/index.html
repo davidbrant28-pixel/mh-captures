@@ -1025,7 +1025,7 @@
       </div>
 
       <div class="booking-summary">
-        <div class="summary-row"><span id="sum-session">Portrait session</span><span id="sum-base">$150</span></div>
+        <div class="summary-row"><span id="sum-session">Portrait session</span><span id="sum-base">$100</span></div>
         <div class="summary-row"><span id="sum-pkg-label">Essential package</span><span id="sum-pkg">Included</span></div>
         <div class="summary-total"><span>Total</span><span id="sum-total">$150</span></div>
         <div class="summary-total" style="font-weight:400;font-size:13px;color:var(--text-sec);"><span>Deposit due today</span><span id="sum-deposit">$30</span></div>
@@ -1326,7 +1326,7 @@
 
   function updateFromSelect() {
     const v = document.getElementById('session-type').value.split('|');
-    sessionName = v[0]; basePrice = parseInt(v[1]);
+    sessionName = v[0]; basePrice = parseFloat(v[1]);
     const consentSection = document.getElementById('minor-consent-section');
     if (consentSection) consentSection.style.display = sessionName === 'Sports' ? 'block' : 'none';
     updateSummary();
@@ -1584,10 +1584,10 @@
     const pkgLabel = pkgAdd === 0 ? 'Essential package' : pkgAdd === 150 ? 'Standard package' : 'Premium package';
     const pkgVal = pkgAdd === 0 ? 'Included' : '+$' + pkgAdd;
     document.getElementById('sum-session').textContent = sessionName + ' session';
-    document.getElementById('sum-base').textContent = '$' + basePrice.toLocaleString();
+    document.getElementById('sum-base').textContent = '$' + basePrice.toFixed(2).replace(/\.00$/, '');
     document.getElementById('sum-pkg-label').textContent = pkgLabel;
     document.getElementById('sum-pkg').textContent = pkgVal;
-    document.getElementById('sum-total').textContent = '$' + total.toLocaleString();
+    document.getElementById('sum-total').textContent = '$' + total.toFixed(2).replace(/\.00$/, '');
     document.getElementById('sum-deposit').textContent = '$' + deposit.toLocaleString();
     document.getElementById('pay-session').textContent = sessionName + ' — ' + (pkgAdd === 0 ? 'Essential' : pkgAdd === 150 ? 'Standard' : 'Premium');
     document.getElementById('pay-deposit').textContent = '$' + deposit.toLocaleString();
