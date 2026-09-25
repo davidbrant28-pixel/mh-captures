@@ -1021,6 +1021,25 @@
         <div class="summary-total"><span>Total</span><span id="sum-total">$150</span></div>
         <div class="summary-total" style="font-weight:400;font-size:13px;color:var(--text-sec);"><span>Deposit due today</span><span id="sum-deposit">$30</span></div>
       </div>
+
+      <!-- MODEL RELEASE FORM -->
+      <div style="border:0.5px solid rgba(212,175,55,0.4);padding:1.25rem;margin-bottom:1rem;background:#0a0a0a;">
+        <div style="font-size:13px;font-weight:600;color:#d4af37;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:0.75rem;">Photo Release Agreement</div>
+        <div style="font-size:12px;color:#a08c2a;line-height:1.8;margin-bottom:1rem;max-height:160px;overflow-y:auto;border:0.5px solid rgba(212,175,55,0.15);padding:0.75rem;">
+          I, the undersigned, grant MH Captures/Media and its owner Matthew Hildebrandt the irrevocable right to use, reproduce, publish and distribute photographs and/or video taken during my session for any lawful purpose including: advertising and promotional materials, social media platforms (Instagram, Facebook, TikTok and others), the photographer's website and portfolio, editorial publications, and competition entries.<br><br>
+          I understand that: (1) No financial compensation is owed for this usage unless separately agreed in writing. (2) I waive the right to approve finished photographs or their use. (3) All photographs remain the intellectual property of MH Captures/Media. (4) The photographer will not use photos in a defamatory or harmful manner. (5) This release is governed by the laws of the Province of Ontario, Canada.<br><br>
+          If the participant is under 18, I confirm I am their legal parent or guardian and have authority to sign on their behalf.
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:0.75rem;">
+          <input type="checkbox" id="release-agreed" style="flex-shrink:0;margin-top:2px;">
+          <label for="release-agreed" style="font-size:12px;color:#c9a227;cursor:pointer;line-height:1.6;">I have read and agree to the Photo Release Agreement above.</label>
+        </div>
+        <div class="form-row" style="margin-bottom:0;">
+          <label>Digital signature (type your full legal name) <span style="color:#d4af37;">*</span></label>
+          <input type="text" id="release-signature" placeholder="Type your full name to sign">
+        </div>
+      </div>
+
       <p class="deposit-note">&#128274; Secure booking · Full refund if cancelled 14+ days before</p>
       <button class="btn-primary" style="width:100%;padding:13px;font-size:14px;" onclick="handleContinue()">Continue to payment →</button>
     </div>
@@ -1241,9 +1260,14 @@
     <h3>Booking confirmed!</h3>
     <p>Thank you for booking with MH Captures/Media. A confirmation will be sent to your email within a few minutes.</p>
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:0.75rem;">We'll reach out within 24 hours to confirm your session details.</p>
-    <div style="border:0.5px solid rgba(212,175,55,0.2);padding:1rem;margin-bottom:1rem;text-align:left;">
+    <div style="border:0.5px solid rgba(212,175,55,0.2);padding:1rem;margin-bottom:0.75rem;text-align:left;">
       <p style="font-size:12px;font-weight:500;color:#d4af37;margin-bottom:0.5rem;">How you will receive your photos</p>
       <p style="font-size:12px;color:var(--text-muted);line-height:1.7;">After your session, your edited photos will be delivered via a private Google Drive link sent to your email within 48 hours. From there you can view, download and share all your photos at full resolution.</p>
+    </div>
+    <div style="border:0.5px solid rgba(212,175,55,0.4);padding:1rem;margin-bottom:0.75rem;text-align:left;background:rgba(212,175,55,0.04);">
+      <p style="font-size:12px;font-weight:500;color:#d4af37;margin-bottom:0.5rem;">Model Release Form Required</p>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.7;margin-bottom:0.75rem;">Please download, sign and email the release form back to <span style="color:#c9a227;">mhmedia@mhcapturesmedia.com</span> before or on the day of your session.</p>
+      <a href="/MH-Captures-Model-Release.pdf" download style="display:inline-block;background:#d4af37;color:#0a0a0a;padding:8px 18px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;text-decoration:none;">Download Release Form →</a>
     </div>
     <button class="btn-primary" style="margin-top:0.5rem;width:100%;" onclick="document.getElementById('successModal').classList.remove('show')">Done</button>
   </div>
@@ -1351,8 +1375,24 @@
     }
   }
 
+  function validateReleaseForm() {
+    const agreed = document.getElementById('release-agreed')?.checked;
+    const signature = document.getElementById('release-signature')?.value?.trim();
+    if (!agreed) {
+      alert('Please read and agree to the Photo Release Agreement to continue.');
+      return false;
+    }
+    if (!signature) {
+      alert('Please type your full name as a digital signature to continue.');
+      document.getElementById('release-signature')?.focus();
+      return false;
+    }
+    return true;
+  }
+
   async function handleContinue() {
     if (!validateBookingFields()) return;
+    if (!validateReleaseForm()) return;
     if (!validateMinorConsent()) return;
 
     const isFirstTime = document.getElementById('first-time-client')?.checked;
@@ -1732,7 +1772,7 @@
       if (result.error) throw new Error(result.error.message);
 
       if (result.paymentIntent?.status === 'succeeded') {
-        await notifyBooking({ name: cardName, email, phone, session, referredBy, type: 'Paid deposit ($30)' });
+        await notifyBooking({ name: cardName, email, phone, session, referredBy, type: 'Paid deposit ($30)', releaseSignature: document.getElementById('release-signature')?.value?.trim() || '' });
         document.getElementById('successModal').classList.add('show');
       } else {
         throw new Error('Payment did not complete. Please try again.');
