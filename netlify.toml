@@ -13,6 +13,11 @@
   status = 200
 
 [[redirects]]
+  from = "/balance"
+  to = "/balance.html"
+  status = 200
+
+[[redirects]]
   from = "/*.html"
   to = "/:splat.html"
   status = 200
