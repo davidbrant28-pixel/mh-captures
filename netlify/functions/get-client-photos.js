@@ -1,124 +1,73 @@
 // netlify/functions/get-client-photos.js
 //
-// Verifies the client's Supabase login, looks up which Cloudinary tag belongs
-// to that client, and returns signed URLs for only their photos.
-//
-// Netlify environment variables required:
-//   SUPABASE_URL                e.g. https://abcdxyz.supabase.co
-//   SUPABASE_PUBLISHABLE_KEY    sb_publishable_... (public key)
-//   SUPABASE_SECRET_KEY         sb_secret_... (SECRET, never put in a page)
-// (Old names SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY still work as a fallback.)
-//   CLOUDINARY_CLOUD_NAME       e1ncafja
-//   CLOUDINARY_API_KEY
-//   CLOUDINARY_API_SECRET
+// Returns ONLY the signed-in client's own PUBLISHED gallery.
+//  - login is verified with Supabase
+//  - the gallery is found through the client's verified email (never from anything the browser sends)
+//  - download links are only created when you have turned downloads on for that gallery
 
-const crypto = require('crypto');
-
-const json = (statusCode, body) => ({
-  statusCode,
-  headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-  body: JSON.stringify(body)
-});
-
-// Cloudinary signed delivery URL for assets uploaded as type "authenticated"
-function signedUrl(cloud, secret, publicId, format, version, transformation) {
-  const toSign = (transformation ? transformation + '/' : '') + publicId + '.' + format;
-  const sig = crypto
-    .createHash('sha1')
-    .update(toSign + secret)
-    .digest('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .substring(0, 8);
-  return (
-    `https://res.cloudinary.com/${cloud}/image/authenticated/s--${sig}--/` +
-    (transformation ? transformation + '/' : '') +
-    `v${version}/${publicId}.${format}`
-  );
-}
+const { json, enc, db, configured, getUser, signedUrl, galleryPhotos } = require('./lib/shared');
 
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'GET' && event.httpMethod !== 'POST') {
-    return json(405, { error: 'Method not allowed' });
-  }
+  if (event.httpMethod !== 'GET' && event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
+  if (!configured()) return json(500, { error: 'Server is not configured yet.' });
 
-  const {
-    SUPABASE_URL,
-    CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
-  } = process.env;
-  const PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
-  const SECRET_KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const user = await getUser(event);
+  if (!user) return json(401, { error: 'Session expired. Please sign in again.' });
 
-  if (!SUPABASE_URL || !PUBLISHABLE_KEY || !SECRET_KEY ||
-      !CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
-    return json(500, { error: 'Server is not configured yet.' });
-  }
-
-  // 1. Who is asking? Verify the Supabase session token.
-  const authHeader = event.headers.authorization || event.headers.Authorization || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
-  if (!token) return json(401, { error: 'Please sign in.' });
-
-  let user;
+  let client, galleries;
   try {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${token}`, apikey: PUBLISHABLE_KEY }
-    });
-    if (!r.ok) return json(401, { error: 'Session expired. Please sign in again.' });
-    user = await r.json();
-  } catch (e) {
-    return json(502, { error: 'Could not verify your login.' });
-  }
-
-  const email = (user.email || '').toLowerCase();
-  if (!email) return json(401, { error: 'Please sign in.' });
-
-  // 2. Which photos belong to this client? (secret key bypasses row security).
-  //    New-style secret keys are NOT JWTs: send in the apikey header only, never as a Bearer token.
-  let client;
-  try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/clients?email=eq.${encodeURIComponent(email)}&select=name,tag,active&limit=1`,
-      { headers: { apikey: SECRET_KEY } }
-    );
-    const rows = await r.json();
-    client = Array.isArray(rows) ? rows[0] : null;
+    client = (await db(`clients?email=eq.${enc(user.email)}&select=id,name,active&limit=1`))[0];
+    if (client && client.active !== false) {
+      galleries = await db(
+        `galleries?client_id=eq.${client.id}&status=eq.published` +
+        `&select=id,title,cloudinary_tag,downloads_enabled,published_at&order=published_at.desc`
+      );
+    }
   } catch (e) {
     return json(502, { error: 'Could not load your gallery.' });
   }
 
-  if (!client || client.active === false || !client.tag) {
-    return json(404, { error: 'No gallery is set up for this account yet.' });
+  if (!client || client.active === false || !galleries || !galleries.length) {
+    return json(404, { error: 'Your gallery is not ready yet. You will get an email from MH Captures/Media when it is.' });
   }
 
-  // 3. Fetch only photos with this client's tag that are "authenticated" type.
-  let resources = [];
+  const wanted = (event.queryStringParameters || {}).gallery;
+  const g = galleries.find((x) => x.id === wanted) || galleries[0];
+  const dl = g.downloads_enabled === true;
+
+  let resources, sels;
   try {
-    const basic = Buffer.from(`${CLOUDINARY_API_KEY}:${CLOUDINARY_API_SECRET}`).toString('base64');
-    const safeTag = String(client.tag).replace(/"/g, '');
-    const r = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/resources/search`, {
-      method: 'POST',
-      headers: { Authorization: `Basic ${basic}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        expression: `tags="${safeTag}" AND type=authenticated AND resource_type=image`,
-        sort_by: [{ created_at: 'asc' }],
-        max_results: 500
-      })
-    });
-    const data = await r.json();
-    if (!r.ok) return json(502, { error: 'Could not load photos.' });
-    resources = data.resources || [];
+    resources = await galleryPhotos(g.cloudinary_tag);
+    sels = await db(`selections?gallery_id=eq.${g.id}&select=photo_public_id,favourite,for_editing,for_printing,note`);
   } catch (e) {
     return json(502, { error: 'Could not load photos.' });
   }
+  const byId = {};
+  (sels || []).forEach((s) => { byId[s.photo_public_id] = s; });
 
-  const photos = resources.map((p) => ({
-    thumb: signedUrl(CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_SECRET, p.public_id, p.format, p.version, 'c_limit,w_900,q_auto'),
-    full: signedUrl(CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_SECRET, p.public_id, p.format, p.version, 'c_limit,w_2400,q_auto:good'),
-    download: signedUrl(CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_SECRET, p.public_id, p.format, p.version, 'fl_attachment'),
-    width: p.width,
-    height: p.height
-  }));
+  const photos = resources.map((p) => {
+    const s = byId[p.public_id] || {};
+    const out = {
+      id: p.public_id,
+      thumb: signedUrl(p.public_id, p.format, p.version, 'c_limit,w_900,q_auto'),
+      // When downloads are off, the big preview is smaller so it is not a free copy of the original.
+      full: signedUrl(p.public_id, p.format, p.version, dl ? 'c_limit,w_2400,q_auto:good' : 'c_limit,w_1400,q_auto:eco'),
+      width: p.width,
+      height: p.height,
+      favourite: !!s.favourite,
+      for_editing: !!s.for_editing,
+      for_printing: !!s.for_printing,
+      note: s.note || ''
+    };
+    if (dl) out.download = signedUrl(p.public_id, p.format, p.version, 'fl_attachment');
+    return out;
+  });
 
-  return json(200, { name: client.name || '', count: photos.length, photos });
+  return json(200, {
+    name: client.name || '',
+    gallery: { id: g.id, title: g.title, downloadsEnabled: dl },
+    galleries: galleries.map((x) => ({ id: x.id, title: x.title })),
+    count: photos.length,
+    photos
+  });
 };

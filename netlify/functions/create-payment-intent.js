@@ -1,5 +1,6 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const https = require('https');
+const { registerAndAck } = require('./lib/shared');
 
 function sendNotification(data) {
   return new Promise((resolve) => {
@@ -108,6 +109,7 @@ exports.handler = async (event) => {
           email: cleanEmail, name: name || '', phone: phone || '',
           metadata: { first_time_free: 'yes', session_type: session || '', referred_by: referredBy, claimed_at: new Date().toISOString() }
         });
+        await registerAndAck({ email: cleanEmail, name, phone, session, referredBy, bookingType: 'free_referral', externalRef: `free:${cleanEmail}`, details: { release_signature: releaseSignature || '' } });
         await sendNotification({ subject: `New Free Booking (Referral) — ${session}`, name, email, phone, session, referredBy, type: 'Free session (referral)', releaseSignature });
         return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'referral' }) };
       }
@@ -116,6 +118,7 @@ exports.handler = async (event) => {
         email: cleanEmail, name: name || '', phone: phone || '',
         metadata: { first_time_free: 'yes', session_type: session || '', referred_by: '', claimed_at: new Date().toISOString() }
       });
+      await registerAndAck({ email: cleanEmail, name, phone, session, referredBy: '', bookingType: 'free_first_time', externalRef: `free:${cleanEmail}`, details: { release_signature: releaseSignature || '' } });
       await sendNotification({ subject: `New Free Booking (First-Time) — ${session}`, name, email, phone, session, referredBy: '', type: 'Free session (first-time)', releaseSignature });
       return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'first_time' }) };
     }
@@ -124,13 +127,18 @@ exports.handler = async (event) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid amount.' }) };
     }
 
+    // The photo release must be signed before any payment can start (enforced here, not just in the browser).
+    if (!releaseSignature || String(releaseSignature).trim().length < 2) {
+      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please agree to and sign the Photo & Video Release Agreement before paying.' }) };
+    }
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount),
       currency: 'cad',
       payment_method_types: ['card'],
       description: `MH Captures/Media — Deposit (${session || 'Session'})`,
       metadata: {
-        customer_name: name || '', customer_email: email || '', session_type: session || '',
+        customer_name: name || '', customer_email: email || '', customer_phone: phone || '', session_type: session || '',
         referred_by: referredBy || '', involves_minor: involvesMinor ? 'yes' : 'no',
         minor_name: minorName || '', guardian_name: guardianName || '',
         release_signed: releaseSignature ? 'yes' : 'no',
@@ -139,7 +147,7 @@ exports.handler = async (event) => {
       receipt_email: email || undefined,
     });
 
-    await sendNotification({ subject: `New Paid Booking — $30 Deposit — ${session}`, name, email, phone, session, referredBy, type: 'Paid deposit ($30)', releaseSignature });
+    // The "New Paid Booking" email to you is now sent by stripe-webhook.js, only after the payment actually succeeds.
 
     return { statusCode: 200, headers, body: JSON.stringify({ clientSecret: paymentIntent.client_secret }) };
 
