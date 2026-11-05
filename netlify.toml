@@ -18,6 +18,16 @@
   status = 200
 
 [[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/my-gallery"
+  to = "/my-gallery.html"
+  status = 200
+
+[[redirects]]
   from = "/*.html"
   to = "/:splat.html"
   status = 200
