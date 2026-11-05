@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/jpeg" href="/favicon.jpg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Client Login — MH Captures/Media</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg: #0a0a0a; --text: #d4af37; --text-sec: #c9a227; --text-muted: #a08830; --border: rgba(212,175,55,0.15); }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 0.85rem 1.5rem; background: rgba(10,10,10,0.88); border-bottom: 0.5px solid var(--border); }
+  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; letter-spacing: 0.08em; color: var(--text); text-decoration: none; }
+  .nav-logo span { font-style: italic; color: #a08c2a; }
+  .nav-back { font-size: 13px; color: var(--text-muted); text-decoration: none; }
+  .nav-back:hover { color: var(--text); }
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
+  .card { width: 100%; max-width: 400px; border: 0.5px solid rgba(212,175,55,0.3); padding: 2rem 1.5rem; background: rgba(10,10,10,0.6); }
+  .eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); text-align: center; margin-bottom: 0.6rem; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-weight: 300; font-size: 34px; text-align: center; margin-bottom: 0.4rem; }
+  h1 em { font-style: italic; }
+  .sub { font-size: 13px; color: var(--text-muted); text-align: center; line-height: 1.6; margin-bottom: 1.5rem; }
+  label { display: block; font-size: 12px; color: var(--text-sec); margin-bottom: 6px; }
+  input { width: 100%; padding: 11px 12px; margin-bottom: 1rem; font-family: inherit; font-size: 16px; background: transparent; color: var(--text); border: 0.5px solid rgba(212,175,55,0.4); border-radius: 0; outline: none; }
+  input:focus { border-color: #d4af37; }
+  button.primary { width: 100%; padding: 12px; font-family: inherit; font-size: 14px; font-weight: 500; background: #d4af37; color: #0a0a0a; border: none; border-radius: 0; cursor: pointer; }
+  button.primary:disabled { opacity: 0.5; cursor: default; }
+  button.link { background: none; border: none; color: var(--text-muted); font-family: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 1rem; display: block; width: 100%; text-align: center; }
+  button.link:hover { color: var(--text); }
+  .msg { font-size: 13px; line-height: 1.5; padding: 10px 12px; margin-bottom: 1rem; display: none; }
+  .msg.err { display: block; border: 0.5px solid #b44; color: #e88; }
+  .msg.ok { display: block; border: 0.5px solid rgba(212,175,55,0.5); color: var(--text); }
+  .hidden { display: none; }
+  footer { text-align: center; padding: 1.5rem 1rem; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/index.html" class="nav-logo">MH <span>Captures/Media</span></a>
+  <a href="/index.html" class="nav-back">← Back to site</a>
+</nav>
+
+<main>
+  <div class="card">
+
+    <!-- Sign in -->
+    <form id="form-signin">
+      <p class="eyebrow">Client access</p>
+      <h1>Your <em>Photos</em></h1>
+      <p class="sub">Sign in to view and download your session photos.</p>
+      <div id="msg-signin" class="msg"></div>
+      <label for="si-email">Email</label>
+      <input id="si-email" type="email" autocomplete="email" required>
+      <label for="si-pass">Password</label>
+      <input id="si-pass" type="password" autocomplete="current-password" required>
+      <button class="primary" id="btn-signin" type="submit">Sign in</button>
+      <button class="link" type="button" id="btn-forgot">First time or forgot your password?</button>
+    </form>
+
+    <!-- Forgot / first time -->
+    <form id="form-forgot" class="hidden">
+      <p class="eyebrow">Set your password</p>
+      <h1>Email <em>link</em></h1>
+      <p class="sub">Enter the email you booked with and we'll send you a link to set your password.</p>
+      <div id="msg-forgot" class="msg"></div>
+      <label for="fg-email">Email</label>
+      <input id="fg-email" type="email" autocomplete="email" required>
+      <button class="primary" id="btn-send" type="submit">Send link</button>
+      <button class="link" type="button" id="btn-back1">Back to sign in</button>
+    </form>
+
+    <!-- New password (arrives from email link) -->
+    <form id="form-reset" class="hidden">
+      <p class="eyebrow">Almost there</p>
+      <h1>New <em>password</em></h1>
+      <p class="sub">Choose a password with at least 8 characters.</p>
+      <div id="msg-reset" class="msg"></div>
+      <label for="rs-pass">New password</label>
+      <input id="rs-pass" type="password" autocomplete="new-password" minlength="8" required>
+      <button class="primary" id="btn-reset" type="submit">Save password</button>
+    </form>
+
+  </div>
+</main>
+
+<footer>© 2026 MH Captures/Media · London, Ontario</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ── FILL THESE IN (Supabase → Project Settings → API). The publishable key is safe to be public. ──
+  const SUPABASE_URL = 'https://oxrwgxthlilbkflanyzm.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__w2Thdi0bCJ-MhUmFDshkA_-dAcwNYr';
+  // ───────────────────────────────────────────────────────────────────────────────────────────
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const $ = (id) => document.getElementById(id);
+  const forms = ['form-signin', 'form-forgot', 'form-reset'];
+
+  function show(id) { forms.forEach(f => $(f).classList.toggle('hidden', f !== id)); }
+  function say(id, text, ok) {
+    const el = $(id);
+    el.textContent = text;
+    el.className = 'msg ' + (ok ? 'ok' : 'err');
+  }
+
+  // Coming from the emailed link? Show the new-password form.
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') show('form-reset');
+  });
+  if (/type=(recovery|invite)/.test(location.hash)) show('form-reset');
+
+  // Already signed in? Go straight to the gallery (unless setting a password).
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session && !/type=(recovery|invite)/.test(location.hash)) {
+      location.replace('/my-gallery.html');
+    }
+  });
+
+  $('form-signin').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('btn-signin').disabled = true;
+    const { error } = await sb.auth.signInWithPassword({
+      email: $('si-email').value.trim(),
+      password: $('si-pass').value
+    });
+    if (error) {
+      say('msg-signin', 'Email or password is incorrect.');
+      $('btn-signin').disabled = false;
+      return;
+    }
+    location.href = '/my-gallery.html';
+  });
+
+  $('btn-forgot').onclick = () => show('form-forgot');
+  $('btn-back1').onclick = () => show('form-signin');
+
+  $('form-forgot').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('btn-send').disabled = true;
+    await sb.auth.resetPasswordForEmail($('fg-email').value.trim(), {
+      redirectTo: location.origin + '/login.html'
+    });
+    // Same message either way so nobody can check who is a client.
+    say('msg-forgot', 'If that email has a gallery, a link is on its way. Check your inbox.', true);
+    $('btn-send').disabled = false;
+  });
+
+  $('form-reset').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    $('btn-reset').disabled = true;
+    const { error } = await sb.auth.updateUser({ password: $('rs-pass').value });
+    if (error) {
+      say('msg-reset', error.message);
+      $('btn-reset').disabled = false;
+      return;
+    }
+    location.href = '/my-gallery.html';
+  });
+</script>
+</body>
+</html>
