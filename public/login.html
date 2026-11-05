@@ -113,10 +113,13 @@
   });
   if (/type=(recovery|invite)/.test(location.hash)) show('form-reset');
 
-  // Already signed in? Go straight to the gallery (unless setting a password).
+  // Where to go after signing in. Only the owner's admin page is allowed as an alternative.
+  const NEXT = new URLSearchParams(location.search).get('next') === '/admin.html' ? '/admin.html' : '/my-gallery.html';
+
+  // Already signed in? Go straight there (unless setting a password).
   sb.auth.getSession().then(({ data }) => {
     if (data.session && !/type=(recovery|invite)/.test(location.hash)) {
-      location.replace('/my-gallery.html');
+      location.replace(NEXT);
     }
   });
 
@@ -132,7 +135,7 @@
       $('btn-signin').disabled = false;
       return;
     }
-    location.href = '/my-gallery.html';
+    location.href = NEXT;
   });
 
   $('btn-forgot').onclick = () => show('form-forgot');

@@ -1738,6 +1738,9 @@
       paymentRequest,
       style: { paymentRequestButton: { theme: 'light', height: '48px', borderRadius: '8px' } }
     });
+    prButton.on('click', (ev) => {
+      if (!validateBookingFields() || !validateReleaseForm() || !validateMinorConsent()) ev.preventDefault();
+    });
     paymentRequest.canMakePayment().then(result => {
       if (result) {
         prButton.mount('#payment-request-button');
@@ -1761,6 +1764,7 @@
 
     // Validate booking fields first
     if (!validateBookingFields()) return;
+    if (!validateReleaseForm()) return;
     if (!validateMinorConsent()) return;
 
     btn.disabled = true;
@@ -1786,7 +1790,7 @@
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getDepositCents(), session, name: cardName, email, phone, referredBy, involvesMinor, minorName, guardianName }),
+        body: JSON.stringify({ amount: getDepositCents(), session, name: cardName, email, phone, referredBy, involvesMinor, minorName, guardianName, releaseSignature: document.getElementById('release-signature')?.value?.trim() || '' }),
       });
 
       const data = await res.json();
@@ -1804,7 +1808,6 @@
       if (result.error) throw new Error(result.error.message);
 
       if (result.paymentIntent?.status === 'succeeded') {
-        await notifyBooking({ name: cardName, email, phone, session, referredBy, type: 'Paid deposit ($30)', releaseSignature: document.getElementById('release-signature')?.value?.trim() || '' });
         document.getElementById('successModal').classList.add('show');
       } else {
         throw new Error('Payment did not complete. Please try again.');
@@ -1825,7 +1828,14 @@
       const res = await fetch('/.netlify/functions/create-payment-intent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: getDepositCents(), session, name: ev.payerName || '', email: ev.payerEmail || '' }),
+        body: JSON.stringify({
+          amount: getDepositCents(), session,
+          name: ev.payerName || '',
+          email: ev.payerEmail || document.getElementById('email')?.value?.trim() || '',
+          phone: document.getElementById('phone')?.value?.trim() || '',
+          referredBy: document.getElementById('referred-by')?.value?.trim() || '',
+          releaseSignature: document.getElementById('release-signature')?.value?.trim() || ''
+        }),
       });
 
       const data = await res.json();

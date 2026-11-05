@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/jpeg" href="/favicon.jpg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Gallery Admin — MH Captures/Media</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg:#0a0a0a; --text:#d4af37; --sec:#c9a227; --muted:#a08830; --line:rgba(212,175,55,0.2); }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+  nav { display:flex; justify-content:space-between; align-items:center; padding:.85rem 1.25rem; border-bottom:.5px solid var(--line); }
+  .logo { font-family:'Cormorant Garamond',serif; font-size:18px; letter-spacing:.08em; }
+  .logo span { font-style:italic; color:#a08c2a; }
+  button, .btn { font-family:inherit; font-size:13px; color:var(--text); background:none; border:.5px solid rgba(212,175,55,.5); padding:7px 13px; cursor:pointer; border-radius:0; }
+  button:hover { border-color:var(--text); }
+  button.primary { background:#d4af37; color:#0a0a0a; border-color:#d4af37; font-weight:500; }
+  button:disabled { opacity:.45; cursor:default; }
+  button.danger { color:#e88; border-color:#b44; }
+  .wrap { display:grid; grid-template-columns:320px 1fr; min-height:calc(100vh - 53px); }
+  .side { border-right:.5px solid var(--line); padding:1rem; overflow:auto; }
+  .main { padding:1.25rem; min-width:0; }
+  h2 { font-family:'Cormorant Garamond',serif; font-weight:300; font-size:26px; margin-bottom:.4rem; }
+  h3 { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:1.1rem 0 .5rem; font-weight:400; }
+  .gcard { border:.5px solid var(--line); padding:10px 12px; margin-bottom:8px; cursor:pointer; }
+  .gcard.sel { border-color:#d4af37; background:rgba(212,175,55,.06); }
+  .gcard b { font-weight:500; display:block; font-size:14px; }
+  .gcard small { color:var(--muted); font-size:12px; display:block; margin-top:2px; }
+  .pill { display:inline-block; font-size:11px; padding:2px 8px; border:.5px solid var(--line); margin-top:5px; }
+  .pill.live { color:#0a0a0a; background:#d4af37; border-color:#d4af37; }
+  input[type=text], input[type=email] { width:100%; padding:9px 10px; margin-bottom:8px; font-family:inherit; font-size:14px; background:transparent; color:var(--text); border:.5px solid rgba(212,175,55,.4); border-radius:0; outline:none; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:.6rem 0; }
+  .drop { border:1px dashed rgba(212,175,55,.5); padding:1.4rem; text-align:center; color:var(--muted); font-size:13px; cursor:pointer; margin:.6rem 0; }
+  .drop.over { background:rgba(212,175,55,.08); }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; margin-top:.6rem; }
+  .ph { position:relative; background:#111; aspect-ratio:1; overflow:hidden; }
+  .ph img { width:100%; height:100%; object-fit:cover; display:block; }
+  .ph .x { position:absolute; top:4px; right:4px; padding:1px 7px; background:rgba(10,10,10,.8); }
+  .ph .tags { position:absolute; left:4px; bottom:4px; font-size:13px; background:rgba(10,10,10,.8); padding:1px 5px; }
+  .msg { font-size:13px; padding:9px 12px; margin:.6rem 0; border:.5px solid var(--line); line-height:1.5; }
+  .msg.err { color:#e88; border-color:#b44; } .msg.ok { color:var(--text); border-color:rgba(212,175,55,.6); }
+  .box { border:.5px solid var(--line); padding:1rem; margin-top:1rem; }
+  .muted { color:var(--muted); font-size:13px; line-height:1.6; }
+  .bar { height:4px; background:rgba(212,175,55,.15); margin-top:6px; } .bar i { display:block; height:100%; background:#d4af37; width:0; }
+  @media (max-width:800px) { .wrap { grid-template-columns:1fr; } .side { border-right:0; border-bottom:.5px solid var(--line); max-height:42vh; } }
+</style>
+</head>
+<body>
+<nav><div class="logo">MH <span>Captures/Media</span> · Admin</div><button id="signout">Sign out</button></nav>
+<div class="wrap">
+  <div class="side">
+    <h2>Galleries</h2>
+    <p class="muted" id="count"></p>
+    <div id="list"></div>
+    <h3>New gallery (past client)</h3>
+    <input type="email" id="n-email" placeholder="Client email">
+    <input type="text" id="n-name" placeholder="Client name">
+    <input type="text" id="n-title" placeholder="Title, e.g. Family session">
+    <button id="n-create">Create gallery</button>
+  </div>
+  <div class="main" id="main"><p class="muted">Choose a gallery on the left. New bookings appear here automatically as drafts.</p></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://oxrwgxthlilbkflanyzm.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__w2Thdi0bCJ-MhUmFDshkA_-dAcwNYr';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const $ = (id) => document.getElementById(id);
+  let galleries = [], sel = null, token = '';
+
+  const el = (tag, props = {}, ...kids) => { const e = Object.assign(document.createElement(tag), props); kids.forEach((k) => e.append(k)); return e; };
+  const fmt = (d) => d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+  async function api(action, data = {}) {
+    const { data: s } = await sb.auth.getSession();
+    if (!s.session) { location.replace('/login.html?next=/admin.html'); throw new Error('signed out'); }
+    token = s.session.access_token;
+    const r = await fetch('/.netlify/functions/admin-api', {
+      method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...data })
+    });
+    const body = await r.json().catch(() => ({}));
+    if (r.status === 401) { location.replace('/login.html?next=/admin.html'); throw new Error('signed out'); }
+    if (!r.ok) { const e = new Error(body.error || 'Something went wrong'); e.status = r.status; throw e; }
+    return body;
+  }
+  function say(text, ok) { const m = $('status'); if (!m) return; m.textContent = text; m.className = 'msg ' + (ok ? 'ok' : 'err'); m.style.display = text ? 'block' : 'none'; }
+
+  async function refresh(keepId) {
+    try {
+      const d = await api('list');
+      galleries = d.galleries || [];
+    } catch (e) {
+      if (e.status === 403) { $('main').replaceChildren(el('p', { className: 'msg err', textContent: 'This account is not an admin. Add your email to ADMIN_EMAILS in Netlify.' })); $('list').replaceChildren(); return; }
+      return;
+    }
+    $('count').textContent = galleries.length + ' total';
+    $('list').replaceChildren(...galleries.map((g) => {
+      const c = g.clients || {}; const bk = g.bookings || {};
+      const card = el('div', { className: 'gcard' + (sel && sel.id === g.id ? ' sel' : '') },
+        el('b', { textContent: c.name || c.email || 'Unknown' }),
+        el('small', { textContent: g.title }),
+        el('small', { textContent: [bk.booking_type ? bk.booking_type.replace(/_/g, ' ') : 'manual', fmt(g.created_at)].join(' · ') }),
+        el('span', { className: 'pill' + (g.status === 'published' ? ' live' : ''), textContent: g.status === 'published' ? 'Published' : 'Draft' }));
+      card.onclick = () => open(g.id);
+      return card;
+    }));
+    if (keepId) open(keepId);
+  }
+
+  async function open(id) {
+    sel = galleries.find((g) => g.id === id); if (!sel) return;
+    [...$('list').children].forEach((c, i) => c.classList.toggle('sel', galleries[i].id === id));
+    const c = sel.clients || {};
+    const main = $('main'); main.replaceChildren();
+    main.append(
+      el('h2', { textContent: sel.title }),
+      el('p', { className: 'muted', textContent: [c.name, c.email, c.phone].filter(Boolean).join(' · ') }),
+      el('div', { id: 'status', className: 'msg', style: 'display:none' })
+    );
+
+    // Upload
+    const input = el('input', { type: 'file', multiple: true, accept: 'image/*', style: 'display:none' });
+    const drop = el('div', { className: 'drop', textContent: 'Drop photos here or click to choose. They upload privately to this gallery only.' });
+    const prog = el('div', { className: 'bar' }, el('i'));
+    drop.onclick = () => input.click();
+    drop.ondragover = (e) => { e.preventDefault(); drop.classList.add('over'); };
+    drop.ondragleave = () => drop.classList.remove('over');
+    drop.ondrop = (e) => { e.preventDefault(); drop.classList.remove('over'); upload([...e.dataTransfer.files]); };
+    input.onchange = () => upload([...input.files]);
+    main.append(el('h3', { textContent: 'Photos' }), drop, input, prog);
+
+    const grid = el('div', { className: 'grid', id: 'grid' });
+    main.append(grid);
+
+    // Downloads
+    const dl = el('input', { type: 'checkbox', checked: !!sel.downloads_enabled, id: 'dl' });
+    dl.onchange = async () => {
+      try { await api('set_downloads', { gallery: sel.id, enabled: dl.checked }); sel.downloads_enabled = dl.checked; say(dl.checked ? 'Downloads are ON for this client.' : 'Downloads are OFF.', true); }
+      catch (e) { dl.checked = !dl.checked; say(e.message); }
+    };
+    // Publish
+    const published = sel.status === 'published';
+    const pub = el('button', { className: 'primary', textContent: 'Publish Gallery & Notify Client', disabled: published });
+    pub.onclick = async () => {
+      if (!confirm('Publish this gallery and email ' + (c.email || 'the client') + ' now?')) return;
+      pub.disabled = true; pub.textContent = 'Publishing…';
+      try {
+        const r = await api('publish', { gallery: sel.id });
+        say(r.kind === 'invited' ? 'Published. A secure link to set a password was emailed to the client.' : 'Published. The client was told their gallery is ready.', true);
+        await refresh(sel.id);
+      } catch (e) { say(e.message); pub.disabled = e.status === 409; pub.textContent = 'Publish Gallery & Notify Client'; if (e.status === 409) await refresh(sel.id); }
+    };
+    const resend = el('button', { textContent: 'Resend email', disabled: !published });
+    resend.onclick = async () => {
+      resend.disabled = true;
+      try { await api('resend', { gallery: sel.id }); say('Email sent again.', true); } catch (e) { say(e.message); }
+      resend.disabled = false;
+    };
+    main.append(el('div', { className: 'box' },
+      el('h3', { textContent: 'Delivery', style: 'margin-top:0' }),
+      el('label', { className: 'row' }, dl, el('span', { textContent: 'Allow this client to download photos' })),
+      el('p', { className: 'muted', textContent: published ? 'Published ' + fmt(sel.published_at) + (sel.notified_at ? ' · client emailed ' + fmt(sel.notified_at) : '') : 'Draft: the client cannot see anything yet and has not been emailed.' }),
+      el('div', { className: 'row' }, pub, resend)
+    ));
+    loadPhotos();
+  }
+
+  async function loadPhotos() {
+    const grid = $('grid'); if (!grid) return;
+    try {
+      const d = await api('photos', { gallery: sel.id });
+      grid.replaceChildren(...d.photos.map((p) => {
+        const x = el('button', { className: 'x', textContent: '×', title: 'Delete photo' });
+        x.onclick = async () => { if (!confirm('Delete this photo permanently?')) return; try { await api('delete_photo', { gallery: sel.id, photo: p.id }); loadPhotos(); } catch (e) { say(e.message); } };
+        const tags = (p.favourite ? '♥' : '') + (p.for_editing ? '✎' : '') + (p.for_printing ? '🖨' : '');
+        return el('div', { className: 'ph', title: p.note || '' }, el('img', { src: p.thumb, loading: 'lazy', alt: '' }), x, ...(tags ? [el('span', { className: 'tags', textContent: tags })] : []));
+      }));
+      if (!d.photos.length) grid.replaceChildren(el('p', { className: 'muted', textContent: 'No photos yet.' }));
+      else grid.before(el('p', { className: 'muted', id: 'pcount', textContent: d.photos.length + ' photos · ♥ favourite  ✎ client wants edited  🖨 client wants printed' }));
+      document.querySelectorAll('#pcount').forEach((n, i, a) => { if (i < a.length - 1) n.remove(); });
+    } catch (e) { say(e.message); }
+  }
+
+  async function upload(files) {
+    files = files.filter((f) => f.type.startsWith('image/'));
+    if (!files.length) return;
+    const bar = document.querySelector('.bar i'); let done = 0, failed = 0;
+    for (const f of files) {
+      try {
+        const s = await api('sign_upload', { gallery: sel.id });
+        const fd = new FormData();
+        fd.append('file', f); fd.append('api_key', s.apiKey); fd.append('timestamp', s.timestamp);
+        fd.append('signature', s.signature); fd.append('tags', s.tags); fd.append('type', s.type);
+        const r = await fetch(`https://api.cloudinary.com/v1_1/${s.cloud}/image/upload`, { method: 'POST', body: fd });
+        if (!r.ok) throw new Error();
+      } catch (e) { failed++; }
+      done++; bar.style.width = (done / files.length * 100) + '%';
+    }
+    say(failed ? `${files.length - failed} uploaded, ${failed} failed (very large files? try again).` : `${files.length} photo${files.length === 1 ? '' : 's'} uploaded.`, !failed);
+    setTimeout(() => { bar.style.width = '0'; }, 1200);
+    loadPhotos();
+  }
+
+  $('n-create').onclick = async () => {
+    try {
+      const r = await api('create_gallery', { email: $('n-email').value, name: $('n-name').value, title: $('n-title').value });
+      $('n-email').value = $('n-name').value = $('n-title').value = '';
+      await refresh(r.gallery.id);
+    } catch (e) { alert(e.message); }
+  };
+  $('signout').onclick = async () => { await sb.auth.signOut(); location.href = '/login.html'; };
+
+  (async () => {
+    const { data } = await sb.auth.getSession();
+    if (!data.session) { location.replace('/login.html?next=/admin.html'); return; }
+    refresh();
+  })();
+</script>
+</body>
+</html>

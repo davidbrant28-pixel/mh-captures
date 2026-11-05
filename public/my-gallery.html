@@ -17,29 +17,38 @@
   .nav-logo span { font-style: italic; color: #a08c2a; }
   .nav-btn { font-family: inherit; font-size: 13px; color: var(--text-muted); background: none; border: 0.5px solid rgba(212,175,55,0.4); padding: 6px 14px; cursor: pointer; border-radius: 0; }
   .nav-btn:hover { color: var(--text); border-color: var(--text); }
-  .gallery-header { text-align: center; padding: 3rem 1rem 2rem; border-bottom: 0.5px solid var(--border); }
-  .gallery-header p { font-size: 11px; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; }
+  .gallery-header { text-align: center; padding: 2.5rem 1rem 1.25rem; }
+  .gallery-header .eyebrow { font-size: 11px; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; }
   .gallery-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; }
   .gallery-header h1 em { font-style: italic; }
-  .gallery-header .count { margin-top: 0.75rem; margin-bottom: 0; letter-spacing: 0.08em; text-transform: none; font-size: 13px; }
+  .gallery-header .sub { margin-top: 0.6rem; font-size: 13px; color: var(--text-muted); }
+  .gsel { margin-top: 0.9rem; display: none; }
+  .gsel select { font-family: inherit; font-size: 14px; background: #0a0a0a; color: var(--text); border: 0.5px solid rgba(212,175,55,0.4); padding: 6px 10px; }
+  .howto { max-width: 640px; margin: 0.75rem auto 0; font-size: 13px; line-height: 1.7; color: var(--text-muted); padding: 0 1rem; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 1rem; border-bottom: 0.5px solid var(--border); }
+  .chip { font-family: inherit; font-size: 13px; color: var(--text-muted); background: none; border: 0.5px solid rgba(212,175,55,0.35); padding: 6px 14px; cursor: pointer; border-radius: 0; }
+  .chip.on { color: #0a0a0a; background: #d4af37; border-color: #d4af37; }
   .gallery-grid { columns: 3; gap: 4px; padding: 1rem; }
-  .gallery-item { break-inside: avoid; margin-bottom: 4px; overflow: hidden; cursor: pointer; position: relative; }
-  .gallery-item img { width: 100%; display: block; transition: transform 0.5s ease; }
-  .gallery-item:hover img { transform: scale(1.04); }
-  .dl { position: absolute; right: 8px; bottom: 8px; background: rgba(10,10,10,0.8); color: var(--text); border: 0.5px solid rgba(212,175,55,0.5); font-size: 12px; padding: 5px 10px; text-decoration: none; opacity: 0; transition: opacity 0.2s; }
-  .gallery-item:hover .dl { opacity: 1; }
-  @media (hover: none) { .dl { opacity: 1; } }
+  .gallery-item { break-inside: avoid; margin-bottom: 4px; overflow: hidden; position: relative; background: #111; }
+  .gallery-item img { width: 100%; display: block; cursor: pointer; }
+  .tools { position: absolute; left: 0; right: 0; bottom: 0; display: flex; gap: 4px; padding: 8px; background: linear-gradient(transparent, rgba(0,0,0,0.75)); }
+  .tbtn { font-family: inherit; font-size: 12px; color: #d4af37; background: rgba(10,10,10,0.75); border: 0.5px solid rgba(212,175,55,0.5); padding: 5px 9px; cursor: pointer; border-radius: 0; text-decoration: none; }
+  .tbtn.on { background: #d4af37; color: #0a0a0a; }
+  .tbtn.dl { margin-left: auto; }
   .state { text-align: center; padding: 4rem 1rem; font-size: 14px; color: var(--text-muted); line-height: 1.7; }
   .spinner { width: 32px; height: 32px; border: 2px solid rgba(212,175,55,0.2); border-top-color: #d4af37; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 200; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; }
   .lightbox.show { display: flex; }
-  .lightbox img { max-width: 100%; max-height: 86vh; object-fit: contain; }
+  .lightbox img { max-width: 100%; max-height: 72vh; object-fit: contain; }
   .lb-btn { position: absolute; background: none; border: none; color: var(--text-muted); cursor: pointer; }
   .lb-close { top: 1rem; right: 1.25rem; font-size: 28px; }
-  .lb-prev, .lb-next { top: 50%; transform: translateY(-50%); font-size: 36px; padding: 1rem; }
+  .lb-prev, .lb-next { top: 40%; font-size: 36px; padding: 1rem; }
   .lb-prev { left: 0; } .lb-next { right: 0; }
-  .lb-dl { bottom: 1.25rem; left: 50%; transform: translateX(-50%); font-size: 13px; color: var(--text); border: 0.5px solid rgba(212,175,55,0.5); padding: 8px 18px; text-decoration: none; }
+  .lb-tools { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+  .lb-note { width: min(480px, 92vw); margin-top: 10px; font-family: inherit; font-size: 14px; background: transparent; color: var(--text); border: 0.5px solid rgba(212,175,55,0.4); padding: 8px 10px; }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: #2a1010; color: #e88; border: 0.5px solid #b44; padding: 8px 16px; font-size: 13px; z-index: 300; display: none; }
+  .toast.show { display: block; }
   footer { text-align: center; padding: 2rem 1rem; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-muted); }
   @media (max-width: 768px) { .gallery-grid { columns: 2; } }
   @media (max-width: 480px) { .gallery-grid { columns: 1; } .gallery-header h1 { font-size: 30px; } }
@@ -53,9 +62,18 @@
 </nav>
 
 <div class="gallery-header">
-  <p>Private gallery</p>
+  <p class="eyebrow">Private gallery</p>
   <h1 id="title">Your <em>Photos</em></h1>
-  <p class="count" id="count"></p>
+  <p class="sub" id="count"></p>
+  <div class="gsel" id="gsel"><select id="gsel-select" aria-label="Choose gallery"></select></div>
+  <p class="howto" id="howto"></p>
+</div>
+
+<div class="bar" id="bar" style="display:none">
+  <button class="chip on" data-f="all">All</button>
+  <button class="chip" data-f="favourite">♥ Favourites</button>
+  <button class="chip" data-f="for_editing">✎ To edit</button>
+  <button class="chip" data-f="for_printing">🖨 To print</button>
 </div>
 
 <div id="content"><div class="state"><div class="spinner"></div>Loading your photos…</div></div>
@@ -65,86 +83,156 @@
   <button class="lb-btn lb-prev" id="lb-prev" aria-label="Previous">‹</button>
   <img id="lb-img" alt="">
   <button class="lb-btn lb-next" id="lb-next" aria-label="Next">›</button>
-  <a class="lb-btn lb-dl" id="lb-dl" href="#">Download</a>
+  <div class="lb-tools" id="lb-tools"></div>
+  <input class="lb-note" id="lb-note" maxlength="500" placeholder="Add a note for this photo (optional)">
 </div>
+<div class="toast" id="toast"></div>
 
 <footer>© 2026 MH Captures/Media · London, Ontario · Photos are for your personal use. Questions? mhmedia@mhcapturesmedia.com</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // ── FILL THESE IN (same values as login.html) ──
   const SUPABASE_URL = 'https://oxrwgxthlilbkflanyzm.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__w2Thdi0bCJ-MhUmFDshkA_-dAcwNYr';
-  // ───────────────────────────────────────────────
 
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
-  let photos = [], cur = 0;
+  let photos = [], view = [], cur = 0, filter = 'all', galleryId = null, downloadsOn = false, token = '';
 
-  function state(html) { $('content').innerHTML = '<div class="state">' + html + '</div>'; }
+  const FLAGS = [
+    { key: 'favourite',    label: '♥ Favourite' },
+    { key: 'for_editing',  label: '✎ Edit this' },
+    { key: 'for_printing', label: '🖨 Print this' }
+  ];
 
-  async function load() {
+  function state(msg) { const d = document.createElement('div'); d.className = 'state'; d.textContent = msg; $('content').replaceChildren(d); }
+  function toast(msg) { const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 3500); }
+
+  async function load(gid) {
     const { data } = await sb.auth.getSession();
     if (!data.session) { location.replace('/login.html'); return; }
+    token = data.session.access_token;
 
     let res;
     try {
-      res = await fetch('/.netlify/functions/get-client-photos', {
-        headers: { Authorization: 'Bearer ' + data.session.access_token }
+      res = await fetch('/.netlify/functions/get-client-photos' + (gid ? '?gallery=' + encodeURIComponent(gid) : ''), {
+        headers: { Authorization: 'Bearer ' + token }
       });
-    } catch (e) {
-      state('Could not reach the server. Please refresh and try again.');
-      return;
-    }
+    } catch (e) { state('Could not reach the server. Please refresh and try again.'); return; }
 
     if (res.status === 401) { await sb.auth.signOut(); location.replace('/login.html'); return; }
     const body = await res.json().catch(() => ({}));
     if (!res.ok) { state(body.error || 'Something went wrong.'); return; }
 
-    if (body.name) $('title').innerHTML = body.name.split(' ')[0] + '’s <em>Photos</em>';
-    photos = body.photos || [];
-    if (!photos.length) {
-      state('Your photos aren’t ready yet.<br>You’ll get an email from MH Captures/Media when they are.');
-      return;
-    }
-    $('count').textContent = photos.length + ' photo' + (photos.length === 1 ? '' : 's');
+    galleryId = body.gallery.id;
+    downloadsOn = body.gallery.downloadsEnabled;
+    if (body.name) { $('title').textContent = ''; $('title').append(document.createTextNode(body.name.split(' ')[0] + '’s '), Object.assign(document.createElement('em'), { textContent: 'Photos' })); }
 
+    if (body.galleries.length > 1) {
+      const sel = $('gsel-select'); sel.replaceChildren();
+      body.galleries.forEach((g) => { const o = document.createElement('option'); o.value = g.id; o.textContent = g.title; if (g.id === galleryId) o.selected = true; sel.appendChild(o); });
+      sel.onchange = () => load(sel.value);
+      $('gsel').style.display = 'block';
+    }
+
+    $('howto').textContent = downloadsOn
+      ? 'Tap ♥ to mark favourites, and choose which photos you would like edited or printed. Downloads are unlocked for this gallery.'
+      : 'Tap ♥ to mark favourites, and choose which photos you would like edited or printed. Downloads will be unlocked by MH Captures/Media once your gallery is final.';
+
+    photos = body.photos || [];
+    if (!photos.length) { state('Your photos are not ready yet.'); return; }
+    $('count').textContent = photos.length + ' photo' + (photos.length === 1 ? '' : 's');
+    $('bar').style.display = 'flex';
+    render();
+  }
+
+  function applyFilter() { view = photos.filter((p) => filter === 'all' || p[filter]); }
+
+  function render() {
+    applyFilter();
+    if (!view.length) { state('No photos in this view yet.'); return; }
     const grid = document.createElement('div');
     grid.className = 'gallery-grid';
-    photos.forEach((p, i) => {
-      const item = document.createElement('div');
-      item.className = 'gallery-item';
-      item.innerHTML = '<img loading="lazy" alt="Photo ' + (i + 1) + '" src="' + p.thumb + '">' +
-        '<a class="dl" href="' + p.download + '">Download</a>';
-      item.addEventListener('click', (e) => { if (!e.target.closest('.dl')) open(i); });
+    view.forEach((p, i) => {
+      const item = document.createElement('div'); item.className = 'gallery-item';
+      const img = document.createElement('img'); img.loading = 'lazy'; img.alt = 'Photo ' + (i + 1); img.src = p.thumb;
+      img.addEventListener('click', () => openLb(i));
+      const tools = document.createElement('div'); tools.className = 'tools';
+      FLAGS.forEach((f) => tools.appendChild(flagBtn(p, f, item)));
+      if (downloadsOn && p.download) { const a = document.createElement('a'); a.className = 'tbtn dl'; a.href = p.download; a.textContent = 'Download'; tools.appendChild(a); }
+      item.append(img, tools);
       grid.appendChild(item);
     });
-    $('content').innerHTML = '';
-    $('content').appendChild(grid);
+    $('content').replaceChildren(grid);
   }
 
-  function open(i) {
-    cur = i;
-    $('lb-img').src = photos[i].full;
-    $('lb-dl').href = photos[i].download;
-    $('lb').classList.add('show');
+  function flagBtn(p, f) {
+    const b = document.createElement('button');
+    b.className = 'tbtn' + (p[f.key] ? ' on' : ''); b.textContent = f.label; b.dataset.k = f.key;
+    b.addEventListener('click', (e) => { e.stopPropagation(); toggle(p, f.key); });
+    return b;
   }
-  const close = () => $('lb').classList.remove('show');
-  const step = (d) => open((cur + d + photos.length) % photos.length);
 
-  $('lb-close').onclick = close;
+  async function save(p) {
+    try {
+      const r = await fetch('/.netlify/functions/save-selection', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gallery: galleryId, photo: p.id, favourite: p.favourite, for_editing: p.for_editing, for_printing: p.for_printing, note: p.note })
+      });
+      if (r.status === 401) { await sb.auth.signOut(); location.replace('/login.html'); return false; }
+      if (!r.ok) throw new Error();
+      return true;
+    } catch (e) { toast('Could not save that. Please try again.'); return false; }
+  }
+
+  async function toggle(p, key) {
+    p[key] = !p[key];
+    refreshButtons();
+    if (!(await save(p))) { p[key] = !p[key]; refreshButtons(); }
+  }
+
+  function refreshButtons() {
+    document.querySelectorAll('.gallery-item').forEach((el, i) => {
+      el.querySelectorAll('.tbtn[data-k]').forEach((b) => b.classList.toggle('on', !!view[i][b.dataset.k]));
+    });
+    if ($('lb').classList.contains('show')) drawLbTools();
+  }
+
+  document.querySelectorAll('.chip').forEach((c) => c.addEventListener('click', () => {
+    document.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x === c));
+    filter = c.dataset.f; render();
+  }));
+
+  function drawLbTools() {
+    const p = view[cur]; const box = $('lb-tools'); box.replaceChildren();
+    FLAGS.forEach((f) => box.appendChild(flagBtn(p, f)));
+    if (downloadsOn && p.download) { const a = document.createElement('a'); a.className = 'tbtn'; a.href = p.download; a.textContent = 'Download'; box.appendChild(a); }
+  }
+  function openLb(i) {
+    cur = i; const p = view[i];
+    $('lb-img').src = p.full; $('lb-note').value = p.note || '';
+    drawLbTools(); $('lb').classList.add('show');
+  }
+  async function closeLb() {
+    const p = view[cur]; const v = $('lb-note').value;
+    $('lb').classList.remove('show');
+    if (p && v !== (p.note || '')) { const old = p.note; p.note = v; if (!(await save(p))) p.note = old; }
+  }
+  const step = async (d) => { const p = view[cur]; const v = $('lb-note').value; if (v !== (p.note || '')) { p.note = v; save(p); } openLb((cur + d + view.length) % view.length); };
+
+  $('lb-close').onclick = closeLb;
   $('lb-prev').onclick = () => step(-1);
   $('lb-next').onclick = () => step(1);
-  $('lb').addEventListener('click', (e) => { if (e.target.id === 'lb') close(); });
+  $('lb').addEventListener('click', (e) => { if (e.target.id === 'lb') closeLb(); });
   document.addEventListener('keydown', (e) => {
-    if (!$('lb').classList.contains('show')) return;
-    if (e.key === 'Escape') close();
+    if (!$('lb').classList.contains('show') || e.target.id === 'lb-note') return;
+    if (e.key === 'Escape') closeLb();
     if (e.key === 'ArrowLeft') step(-1);
     if (e.key === 'ArrowRight') step(1);
   });
 
   $('signout').onclick = async () => { await sb.auth.signOut(); location.href = '/login.html'; };
-
   load();
 </script>
 </body>
