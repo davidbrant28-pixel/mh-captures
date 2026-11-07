@@ -96,6 +96,11 @@
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable__w2Thdi0bCJ-MhUmFDshkA_-dAcwNYr';
   // ───────────────────────────────────────────────────────────────────────────────────────────
 
+  // Remember BEFORE the Supabase library runs (it removes the link's token from the address bar).
+  const FROM_EMAIL_LINK = /type=(recovery|invite)/.test(location.hash) ||
+    (() => { try { return sessionStorage.getItem('mh_setting_password') === '1'; } catch (e) { return false; } })();
+  if (FROM_EMAIL_LINK) { try { sessionStorage.setItem('mh_setting_password', '1'); } catch (e) {} }
+
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
   const $ = (id) => document.getElementById(id);
   const forms = ['form-signin', 'form-forgot', 'form-reset'];
@@ -111,11 +116,11 @@
   sb.auth.onAuthStateChange((event) => {
     if (event === 'PASSWORD_RECOVERY') show('form-reset');
   });
-  if (/type=(recovery|invite)/.test(location.hash)) show('form-reset');
+  if (FROM_EMAIL_LINK) show('form-reset');
 
   // Already signed in? Go straight to the gallery (unless setting a password).
   sb.auth.getSession().then(({ data }) => {
-    if (data.session && !/type=(recovery|invite)/.test(location.hash)) {
+    if (data.session && !FROM_EMAIL_LINK) {
       location.replace('/my-gallery.html');
     }
   });
@@ -158,6 +163,7 @@
       $('btn-reset').disabled = false;
       return;
     }
+    try { sessionStorage.removeItem('mh_setting_password'); } catch (e) {}
     location.href = '/my-gallery.html';
   });
 </script>
