@@ -733,6 +733,28 @@
     .section-title { font-size: 52px; }
     .booking-layout { max-width: 1100px; gap: 5rem; }
   }
+
+  /* ── MOBILE MENU ── */
+  .nav-toggle {
+    background: transparent; border: 0.5px solid var(--border-strong);
+    color: var(--text); font-size: 18px; line-height: 1;
+    padding: 5px 10px; border-radius: var(--radius); cursor: pointer;
+  }
+  .mobile-menu {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    background: rgba(10,10,10,0.97);
+    border-bottom: 0.5px solid var(--border-strong);
+    padding: 0.5rem 1rem 1rem; flex-direction: column;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a {
+    font-size: 15px; color: var(--text); text-decoration: none;
+    padding: 12px 4px; border-bottom: 0.5px solid var(--border);
+  }
+  .mobile-menu a:last-child { border-bottom: 0; }
+  @media (min-width: 640px) {
+    .nav-toggle, .mobile-menu, .mobile-menu.open { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -778,9 +800,28 @@
     <a href="/blog.html">Blog</a>
     <a href="#services">Services</a>
     <a href="#faq">FAQ</a>
+    <a href="/login.html">Client login</a>
     <button class="nav-cta" onclick="document.getElementById('booking').scrollIntoView({behavior:'smooth'})">Book now</button>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu">&#9776;</button>
+  </div>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="#portfolio">Portfolio</a>
+    <a href="/gallery.html">Gallery</a>
+    <a href="/blog.html">Blog</a>
+    <a href="#services">Services</a>
+    <a href="#faq">FAQ</a>
+    <a href="/login.html">Client login</a>
   </div>
 </nav>
+<script>
+(function () {
+  var t = document.getElementById('nav-toggle'), m = document.getElementById('mobile-menu');
+  if (!t || !m) return;
+  function set(open) { m.classList.toggle('open', open); t.setAttribute('aria-expanded', open ? 'true' : 'false'); t.innerHTML = open ? '&#10005;' : '&#9776;'; }
+  t.addEventListener('click', function () { set(!m.classList.contains('open')); });
+  m.addEventListener('click', function (e) { if (e.target.tagName === 'A') set(false); });
+})();
+</script>
 
 <!-- HERO -->
 <section class="hero" style="padding:0;">
@@ -1011,7 +1052,7 @@
             <ul style="margin:8px 0 0 16px;display:flex;flex-direction:column;gap:4px;">
               <li>Photos may be used by the client for personal use</li>
               <li>Photos will not be published publicly without separate written consent</li>
-              <li>A digital copy of all edited photos will be delivered to the client</li>
+              <li>A digital copy of all edited photos will be delivered to the client through a private online gallery</li>
               <li>I have the legal authority to grant this permission</li>
             </ul>
           </div>
@@ -1197,7 +1238,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">How long until I receive my photos? <span class="faq-icon">&#8964;</span></button>
-        <div class="faq-a">Portrait and family sessions are delivered within 48 hours. Commercial and sports work timelines are agreed upon during the brief — rush delivery is available for an additional fee.</div>
+        <div class="faq-a">Portrait and family sessions are delivered to your private online gallery within 48 hours, and you will get an email with a link to log in. Commercial and sports work timelines are agreed upon during the brief — rush delivery is available for an additional fee.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Can I request a specific location? <span class="faq-icon">&#8964;</span></button>
@@ -1205,7 +1246,7 @@
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">Do you offer prints or albums? <span class="faq-icon">&#8964;</span></button>
-        <div class="faq-a">At this time, physical prints and albums are not available. All edited images are delivered digitally as high-resolution downloads, ready for you to print wherever you like.</div>
+        <div class="faq-a">At this time, physical prints and albums are not available. All edited images are delivered digitally through your private online gallery as high-resolution downloads, ready for you to print wherever you like.</div>
       </div>
       <div class="faq-item">
         <button class="faq-q" onclick="toggleFaq(this)">What if the weather is bad on my shoot day? <span class="faq-icon">&#8964;</span></button>
@@ -1294,7 +1335,7 @@
     <p style="font-size:13px;color:var(--text-muted);margin-bottom:0.75rem;">We'll reach out within 24 hours to confirm your session details.</p>
     <div style="border:0.5px solid rgba(212,175,55,0.2);padding:1rem;margin-bottom:0.75rem;text-align:left;">
       <p style="font-size:12px;font-weight:500;color:#d4af37;margin-bottom:0.5rem;">How you will receive your photos</p>
-      <p style="font-size:12px;color:var(--text-muted);line-height:1.7;">After your session, your edited photos will be delivered via a private Google Drive link sent to your email within 48 hours. From there you can view, download and share all your photos at full resolution.</p>
+      <p style="font-size:12px;color:var(--text-muted);line-height:1.7;">After your session, your edited photos will be delivered to your private online gallery on this website, usually within 48 hours. You will receive an email with a link to set up your login. From there you can view and download all your photos at full resolution.</p>
     </div>
     <div style="border:0.5px solid rgba(212,175,55,0.4);padding:1rem;margin-bottom:0.75rem;text-align:left;background:rgba(212,175,55,0.04);">
       <p style="font-size:12px;font-weight:500;color:#d4af37;margin-bottom:0.5rem;">Model Release Form Required</p>
