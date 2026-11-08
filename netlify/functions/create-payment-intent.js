@@ -34,6 +34,41 @@ function sendNotification(data) {
   });
 }
 
+// Emails the CUSTOMER an acknowledgment for a free booking (sent through Resend).
+// Needs the Netlify setting RESEND_API_KEY. If it is missing or fails, the booking still works.
+async function sendFreeBookingEmail({ email, name, session, referral }) {
+  const key = process.env.RESEND_API_KEY;
+  if (!key || !email) return;
+  const esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const first = String(name || '').trim().split(/\s+/)[0] || 'there';
+  const why = referral
+    ? 'Your referral has been verified, so your session is free.'
+    : 'As a first-time client, your session is free.';
+  const what = session ? ` for a <b>${esc(session)}</b> session` : '';
+  const text = `Hi ${first},\n\nThank you for booking${session ? ' a ' + session + ' session' : ''} with MH Captures/Media. ${why} There is nothing to pay.\n\nI will confirm your requested date and time within 24 hours. If I need anything else, I will reply to this email.\n\nAfter your session, your edited photos will be delivered to your private online gallery. I will email you a link to set up your login when it is ready, usually within 48 hours.\n\nMH Captures/Media\nLondon, Ontario\nmhmedia@mhcapturesmedia.com`;
+  const html = `<div style="background:#0a0a0a;padding:32px 16px;font-family:Helvetica,Arial,sans-serif;"><div style="max-width:520px;margin:0 auto;border:1px solid #3a3320;padding:32px 28px;color:#d4af37;">
+<div style="font-size:20px;letter-spacing:1px;margin-bottom:20px;">MH <i style="color:#a08c2a">Captures/Media</i></div>
+<p style="font-size:16px;line-height:1.6;margin:0 0 14px;">Hi ${esc(first)},</p>
+<p style="font-size:15px;line-height:1.7;margin:0 0 14px;color:#c9a227;">Thank you for booking${what} with MH Captures/Media. ${why} There is nothing to pay.</p>
+<p style="font-size:15px;line-height:1.7;margin:0 0 14px;color:#c9a227;"><b>I will confirm your requested date and time within 24 hours.</b> If I need anything else, I will reply to this email.</p>
+<p style="font-size:15px;line-height:1.7;margin:0;color:#c9a227;">After your session, your edited photos will be delivered to your private online gallery. I will email you a link to set up your login when it is ready, usually within 48 hours.</p>
+<div style="margin-top:28px;font-size:12px;color:#a08830;">MH Captures/Media · London, Ontario · mhmedia@mhcapturesmedia.com</div></div></div>`;
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM || 'MH Captures/Media <mhmedia@mhcapturesmedia.com>',
+        to: [email], reply_to: 'mhmedia@mhcapturesmedia.com',
+        subject: 'We received your booking request — MH Captures/Media', html, text
+      })
+    });
+    if (!r.ok) console.error('Free booking email failed:', r.status);
+  } catch (e) {
+    console.error('Free booking email error:', e.message);
+  }
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
@@ -109,6 +144,7 @@ exports.handler = async (event) => {
           metadata: { first_time_free: 'yes', session_type: session || '', referred_by: referredBy, claimed_at: new Date().toISOString() }
         });
         await sendNotification({ subject: `New Free Booking (Referral) — ${session}`, name, email, phone, session, referredBy, type: 'Free session (referral)', releaseSignature });
+        await sendFreeBookingEmail({ email: cleanEmail, name, session, referral: true });
         return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'referral' }) };
       }
 
@@ -117,6 +153,7 @@ exports.handler = async (event) => {
         metadata: { first_time_free: 'yes', session_type: session || '', referred_by: '', claimed_at: new Date().toISOString() }
       });
       await sendNotification({ subject: `New Free Booking (First-Time) — ${session}`, name, email, phone, session, referredBy: '', type: 'Free session (first-time)', releaseSignature });
+      await sendFreeBookingEmail({ email: cleanEmail, name, session, referral: false });
       return { statusCode: 200, headers, body: JSON.stringify({ free: true, reason: 'first_time' }) };
     }
 
