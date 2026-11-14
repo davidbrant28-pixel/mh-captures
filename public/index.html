@@ -1684,6 +1684,25 @@
     });
   }
 
+  /* ── BACKGROUND PICTURE (from Cloudinary) ──
+     Upload a photo to Cloudinary and tag it  Background .
+     The newest photo with that tag becomes the site background.
+     If none is found, the built-in background stays. */
+  async function loadBackground() {
+    try {
+      const res = await fetch('https://res.cloudinary.com/e1ncafja/image/list/Background.json');
+      if (!res.ok) return;
+      const data = await res.json();
+      const list = (data.resources || []).slice().sort((a, b) => (b.version || 0) - (a.version || 0));
+      if (!list.length) return;
+      const r = list[0];
+      const url = 'https://res.cloudinary.com/e1ncafja/image/upload/q_auto,f_auto,w_1920,c_limit/v' + r.version + '/' + r.public_id;
+      const img = new Image();
+      img.onload = () => document.documentElement.style.setProperty('--bg-image', "url('" + url + "')");
+      img.src = url;
+    } catch (e) { console.log('Background load error:', e); }
+  }
+
   /* ── FAQ ACCORDION ── */
   function toggleFaq(btn) {
     const answer = btn.nextElementSibling;
@@ -1965,6 +1984,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     initStripe();
     initReveal();
+    loadBackground();
     initParallax();
     initBannerScroll();
     const params = new URLSearchParams(window.location.search);
