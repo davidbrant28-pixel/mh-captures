@@ -65,8 +65,9 @@
 
 <div class="filter-bar">
   <button class="ftab active" onclick="showFolder('all', this)">All</button>
-  <button class="ftab" onclick="showFolder('Gallery', this)">Gallery</button>
+  <button class="ftab" onclick="showFolder('Featured', this)">Featured</button>
   <button class="ftab" onclick="showFolder('Portrait', this)">Portrait</button>
+  <button class="ftab" onclick="showFolder('Events', this)">Events</button>
   <button class="ftab" onclick="showFolder('Sports', this)">Sports</button>
 </div>
 
@@ -86,8 +87,9 @@
 <script>
   const CLOUD = 'e1ncafja';
   const FOLDERS = {
-    'Gallery': [],
+    'Featured': [],
     'Portrait': [],
+    'Events': [],
     'Sports': [],
   };
 
@@ -105,7 +107,7 @@
     if (loaded) return;
     // Use the folder listing endpoint with a tag-based approach
     // We'll try each folder using the upload API list endpoint
-    const folderNames = ['Gallery', 'Portrait', 'Sports'];
+    const folderNames = ['Featured', 'Portrait', 'Events', 'Sports'];
 
     for (const folder of folderNames) {
       try {
@@ -122,7 +124,9 @@
             full: imgUrl(r.public_id, 1400),
           }));
           FOLDERS[folder] = photos;
-          allPhotos = [...allPhotos, ...photos];
+          // a photo with two tags (e.g. Featured + Portrait) should appear only once in "All"
+          const seen = new Set(allPhotos.map(p => p.id));
+          allPhotos = [...allPhotos, ...photos.filter(p => !seen.has(p.id))];
         }
       } catch(e) {
         console.log('Folder error:', folder, e);
