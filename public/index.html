@@ -883,11 +883,12 @@
       <p style="font-size:14px;color:#c9a227;line-height:1.8;margin-top:0.75rem;max-width:620px;">As you explore my work, you'll find a collection of moments that reflect real people, real emotions, and lasting memories. I hope these images not only showcase my photography but also inspire you to imagine how your own story could be captured.</p>
       <p style="font-size:14px;color:#d4af37;line-height:1.8;margin-top:0.75rem;max-width:620px;font-style:italic;">Thank you for taking the time to browse my portfolio. I look forward to the opportunity to create something meaningful with you.</p>
     </div>
-    <div class="filter-tabs">
+    <div class="filter-tabs" id="portTabs">
       <button class="ftab active" onclick="filterPort(this,'all')">All</button>
-      <button class="ftab" onclick="filterPort(this,'portrait')">Portrait</button>
-      
-      <button class="ftab" onclick="filterPort(this,'commercial')">Commercial</button>
+      <button class="ftab" onclick="filterPort(this,'Featured')">Featured</button>
+      <button class="ftab" onclick="filterPort(this,'Portrait')">Portrait</button>
+      <button class="ftab" onclick="filterPort(this,'Events')">Events</button>
+      <button class="ftab" onclick="filterPort(this,'Sports')">Sports</button>
     </div>
   </div>
   <div class="port-grid" id="portGrid">
@@ -1627,12 +1628,64 @@
   }
 
   /* ── PORTFOLIO FILTER ── */
-  function filterPort(btn, cat) {
-    document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.port-item').forEach(item => {
-      item.style.display = (cat === 'all' || item.dataset.cat === cat) ? '' : 'none';
+  /* ── PORTFOLIO (loads public photos from Cloudinary by tag) ── */
+  const PORT_CLOUD = 'e1ncafja';
+  const PORT_TAGS = ['Featured', 'Portrait', 'Events', 'Sports'];
+  const PORT_MAX = 24;
+  const portData = {};          // tag -> [photos]
+  let portAll = [];
+  let portLive = false;         // true once photos were loaded from Cloudinary
+
+  function portUrl(id, w) {
+    return 'https://res.cloudinary.com/' + PORT_CLOUD + '/image/upload/q_auto,f_auto,w_' + w + '/' + id;
+  }
+
+  function renderPortfolio(cat) {
+    const list = (cat === 'all' ? portAll : (portData[cat] || [])).slice(0, PORT_MAX);
+    const grid = document.getElementById('portGrid');
+    grid.innerHTML = '';
+    if (!list.length) {
+      const msg = document.createElement('p');
+      msg.style.cssText = 'grid-column:1/-1;text-align:center;padding:2rem 1rem;font-size:14px;color:#a08c2a;';
+      msg.textContent = 'No photos in this category yet.';
+      grid.appendChild(msg);
+      return;
+    }
+    list.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'port-item visible';
+      const img = document.createElement('img');
+      img.src = p.thumb; img.alt = 'MH Captures/Media'; img.loading = 'lazy';
+      item.appendChild(img);
+      grid.appendChild(item);
     });
+  }
+
+  async function loadPortfolio() {
+    const seen = new Set();
+    for (const tag of PORT_TAGS) {
+      portData[tag] = [];
+      try {
+        const res = await fetch('https://res.cloudinary.com/' + PORT_CLOUD + '/image/list/' + tag + '.json');
+        if (!res.ok) continue;
+        const data = await res.json();
+        portData[tag] = (data.resources || []).map(r => ({ id: r.public_id, thumb: portUrl(r.public_id, 800) }));
+        portData[tag].forEach(p => { if (!seen.has(p.id)) { seen.add(p.id); portAll.push(p); } });
+      } catch (e) { console.log('Portfolio load error:', tag, e); }
+    }
+    const tabs = document.getElementById('portTabs');
+    if (portAll.length) {
+      portLive = true;
+      renderPortfolio('all');
+    } else if (tabs) {
+      tabs.style.display = 'none';   // nothing loaded: keep the built-in photos, hide the tabs
+    }
+  }
+
+  function filterPort(btn, cat) {
+    document.querySelectorAll('#portTabs .ftab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (portLive) renderPortfolio(cat);
   }
 
   /* ── FAQ ACCORDION ── */
@@ -1916,6 +1969,7 @@
   window.addEventListener('DOMContentLoaded', () => {
     initStripe();
     initReveal();
+    loadPortfolio();
     initParallax();
     initBannerScroll();
     const params = new URLSearchParams(window.location.search);
