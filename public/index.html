@@ -761,6 +761,26 @@
   .port-grid .port-item:nth-child(n) { grid-column: auto; aspect-ratio: 4/3; min-height: 0; }
   @media (min-width: 640px)  { .port-grid { grid-template-columns: repeat(3, 1fr); } }
   @media (min-width: 1024px) { .port-grid { grid-template-columns: repeat(4, 1fr); } }
+
+  /* ── SHORTER PAGE: tighter spacing between sections, promo cards side by side ── */
+  section { padding: 1.5rem 1rem; }
+  @media (min-width: 640px)  { section { padding: 2.75rem 1.5rem; } }
+  @media (min-width: 1024px) { section { padding: 3.5rem 2.5rem; } }
+  @media (min-width: 1400px) { section { padding: 4rem 5rem; } }
+  @media (min-width: 640px)  { #promotions details > div[style*="display:grid"] { grid-template-columns: 1fr 1fr !important; } }
+
+  /* promotions: tap-to-open on phones, always open on larger screens */
+  #promoSummary { display: none; }
+  @media (max-width: 639px) {
+    #promoSummary {
+      display: block; cursor: pointer; margin-top: 1rem; padding: 12px 14px;
+      border: 0.5px solid rgba(212,175,55,0.4); color: #d4af37; font-size: 14px; list-style: none;
+    }
+    #promoSummary::-webkit-details-marker { display: none; }
+    #promoSummary::after { content: "+"; float: right; }
+    #promoDetails[open] #promoSummary::after { content: "–"; }
+  }
+  @media (min-width: 640px) { #promoDetails > #promoSummary { display: none; } }
 </style>
 </head>
 <body>
@@ -1157,6 +1177,8 @@
     <p class="eyebrow">Limited offer</p>
     <h2 class="section-title">Deals & <em>Promotions</em></h2>
   </div>
+  <details id="promoDetails" open>
+    <summary id="promoSummary">See current offers</summary>
   <div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-top:1rem;">
 
     <div style="border:0.5px solid rgba(212,175,55,0.4);border-radius:0;padding:1.5rem;background:#0a0a0a;position:relative;overflow:hidden;">
@@ -1194,6 +1216,8 @@
     </div>
 
   </div>
+  </details>
+  <script>if (window.innerWidth < 640) document.getElementById('promoDetails').removeAttribute('open');</script>
 </section>
 
 <!-- FAQ -->
@@ -1755,6 +1779,7 @@
 
     fetch('https://formspree.io/f/mqpkeajb', {
       method: 'POST',
+      headers: { 'Accept': 'application/json' },
       body: formData,
     })
     .then(res => res.json())
@@ -1767,12 +1792,15 @@
         document.getElementById('inq-subject').value = '';
         document.getElementById('inq-message').value = '';
       } else {
-        errDiv.textContent = 'Something went wrong. Please try again or email us directly.';
+        const why = data && data.errors && data.errors[0] && data.errors[0].message ? ' (' + data.errors[0].message + ')' : (data && data.error ? ' (' + data.error + ')' : '');
+        console.log('Inquiry error response:', data);
+        errDiv.textContent = 'Something went wrong' + why + '. Please try again or email mhmedia@mhcapturesmedia.com directly.';
         errDiv.style.display = 'block';
       }
     })
-    .catch(() => {
-      errDiv.textContent = 'Network error. Please check your connection and try again.';
+    .catch((err) => {
+      console.log('Inquiry network error:', err);
+      errDiv.textContent = 'We could not send your message. Please try again or email mhmedia@mhcapturesmedia.com directly.';
       errDiv.style.display = 'block';
     })
     .finally(() => {
