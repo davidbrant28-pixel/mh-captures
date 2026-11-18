@@ -755,6 +755,12 @@
   @media (min-width: 640px) {
     .nav-toggle, .mobile-menu, .mobile-menu.open { display: none; }
   }
+
+  /* ── PORTFOLIO: mid-size, even tiles (no oversized photos) ── */
+  .port-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .port-grid .port-item:nth-child(n) { grid-column: auto; aspect-ratio: 4/3; min-height: 0; }
+  @media (min-width: 640px)  { .port-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1024px) { .port-grid { grid-template-columns: repeat(4, 1fr); } }
 </style>
 </head>
 <body>
