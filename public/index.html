@@ -781,6 +781,18 @@
     #promoDetails[open] #promoSummary::after { content: "–"; }
   }
   @media (min-width: 640px) { #promoDetails > #promoSummary { display: none; } }
+
+  /* ── SERVICES: 4 cards ── */
+  @media (min-width: 640px) {
+    .service-card:nth-child(n) { grid-column: auto; border-top: none; border-right: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border); }
+    .service-card:nth-child(2n) { border-right: none; }
+    .service-card:nth-last-child(-n+2) { border-bottom: none; }
+  }
+  @media (min-width: 1024px) {
+    .services-grid { grid-template-columns: repeat(4, 1fr); }
+    .service-card:nth-child(n) { border-right: 0.5px solid var(--border); border-bottom: none; }
+    .service-card:last-child { border-right: none; }
+  }
 </style>
 </head>
 <body>
@@ -896,6 +908,13 @@
       <div class="service-price">From $200</div>
       <div class="service-duration">3 hours · Full resolution files</div>
     </div>
+    <div class="service-card" onclick="selectService(this,'Winter Mini',100,'30 min')">
+      <div class="service-icon">&#10052;</div>
+      <div class="service-name">Winter Mini</div>
+      <div class="service-desc">A short winter session at an outdoor location. Quick, simple and great for a seasonal portrait.</div>
+      <div class="service-price">$100</div>
+      <div class="service-duration">30 minutes · 10 edited images</div>
+    </div>
   </div>
 </section>
 
@@ -1010,6 +1029,7 @@
           <option value="Portrait|150|1.5 hrs">Portrait — from $100</option>
           <option value="Family|175|2 hrs">Family — from $175</option>
           <option value="Sports|300|3 hrs">Sports — from $200</option>
+          <option value="Winter Mini|100|30 min">Winter Mini — $100 (30 min, 10 edited images)</option>
         </select>
       </div>
       <div class="form-row">
