@@ -25,6 +25,13 @@
   p, li { font-size: 14px; line-height: 1.75; color: var(--text-sec); margin-bottom: 0.8rem; }
   ul { padding-left: 1.2rem; margin-bottom: 0.8rem; }
   a { color: var(--text); }
+  .forms { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); margin: 1rem 0 0.5rem; }
+  .form-card { background: #0a0a0a; padding: 1.25rem; display: block; text-decoration: none; }
+  .form-card:hover { background: rgba(212,175,55,0.05); }
+  .form-card b { display: block; font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; color: var(--text); margin-bottom: 0.3rem; }
+  .form-card span { display: block; font-size: 12.5px; line-height: 1.6; color: var(--text-muted); margin-bottom: 0.75rem; }
+  .form-card em { font-style: normal; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); }
+  @media (max-width: 640px) { .forms { grid-template-columns: 1fr; } }
   .updated { font-size: 12px; color: var(--text-muted); margin-top: 2rem; }
   footer { text-align: center; padding: 2rem 1rem; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-muted); margin-top: 3rem; }
   @media (max-width: 640px) { .header h1 { font-size: 32px; } }
@@ -100,6 +107,13 @@
 <p>If we cannot deliver your photos because of illness, equipment failure or events beyond our control, we will reschedule or refund what you paid. Our liability is limited to the amount you paid for the session.</p>
 <p>We may update these terms; the version posted on mhcapturesmedia.com on your booking date applies to you. These terms follow the laws of Ontario, Canada.</p>
 <p>Contact: MH Captures/Media, a Highcrest Group company, <a href="mailto:mhmedia@mhcapturesmedia.com">mhmedia@mhcapturesmedia.com</a>.</p>
+<h2 id="forms">Forms and downloads</h2>
+<p>Fillable PDFs: type into the fields, then email the completed form to <a href="mailto:mhmedia@mhcapturesmedia.com">mhmedia@mhcapturesmedia.com</a>.</p>
+<div class="forms">
+  <a class="form-card" href="/MH-Captures-Model-Release.pdf" download><b>Photo Release</b><span>For individual clients, families and parents or guardians of minors.</span><em>Download PDF →</em></a>
+  <a class="form-card" href="/MH-Captures-Organizer-Agreement.pdf" download><b>Organizer Agreement</b><span>For schools, teams, leagues and group events.</span><em>Download PDF →</em></a>
+</div>
+
 <p class="updated">Last updated November 25, 2026.</p>
 </main>
 <footer>© 2026 MH Captures/Media, a Highcrest Group company · <a href="/index.html" style="color:var(--text-muted);text-decoration:none;">mhcapturesmedia.com</a></footer>
