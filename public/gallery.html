@@ -4,195 +4,228 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/jpeg" href="/favicon.jpg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gallery — MH Captures/Media</title>
+<title>Pay Remaining Balance — MH Captures/Media</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --bg: #0a0a0a; --text: #d4af37; --text-sec: #c9a227; --text-muted: #a08830; --border: rgba(212,175,55,0.15); }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
   nav {
-    position: sticky; top: 0; z-index: 100;
     display: flex; justify-content: space-between; align-items: center;
     padding: 0.85rem 1.5rem;
-    background: rgba(10,10,10,0.88);
+    background: rgba(10,10,10,0.95);
     border-bottom: 0.5px solid var(--border);
-    backdrop-filter: blur(8px);
   }
   .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; letter-spacing: 0.08em; color: var(--text); text-decoration: none; }
   .nav-logo span { font-style: italic; color: #a08c2a; }
-  .nav-back { font-size: 13px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
-  .nav-back:hover { color: var(--text); }
-  .gallery-header { text-align: center; padding: 3rem 1rem 2rem; border-bottom: 0.5px solid var(--border); }
-  .gallery-header p { font-size: 11px; letter-spacing: 0.18em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.75rem; }
-  .gallery-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; }
-  .gallery-header h1 em { font-style: italic; }
-  .filter-bar { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; padding: 1.5rem 1rem; border-bottom: 0.5px solid var(--border); }
-  .ftab { padding: 7px 18px; font-size: 13px; font-family: 'DM Sans', sans-serif; border: 0.5px solid rgba(212,175,55,0.4); background: transparent; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
-  .ftab.active { background: #d4af37; color: #0a0a0a; border-color: #d4af37; }
-  .ftab:hover:not(.active) { color: var(--text); border-color: var(--text); }
-  .gallery-grid { columns: 3; gap: 4px; padding: 1rem; }
-  .gallery-item { break-inside: avoid; margin-bottom: 4px; overflow: hidden; cursor: pointer; position: relative; }
-  .gallery-item img { width: 100%; display: block; transition: transform 0.5s ease; }
-  .gallery-item:hover img { transform: scale(1.04); }
-  .loading { text-align: center; padding: 4rem 1rem; font-size: 14px; color: var(--text-muted); }
-  .spinner { width: 32px; height: 32px; border: 2px solid rgba(212,175,55,0.2); border-top-color: #d4af37; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; align-items: center; justify-content: center; padding: 1rem; }
-  .lightbox.show { display: flex; }
-  .lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; }
-  .lightbox-close { position: absolute; top: 1rem; right: 1.25rem; font-size: 28px; color: var(--text-muted); cursor: pointer; background: none; border: none; }
-  .lightbox-prev, .lightbox-next { position: absolute; top: 50%; transform: translateY(-50%); font-size: 36px; color: var(--text-muted); cursor: pointer; background: none; border: none; padding: 1rem; }
-  .lightbox-prev { left: 0; }
-  .lightbox-next { right: 0; }
-  .empty { text-align: center; padding: 4rem 1rem; font-size: 14px; color: var(--text-muted); }
-  footer { text-align: center; padding: 2rem 1rem; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-muted); background: rgba(10,10,10,0.88); }
-  @media (max-width: 768px) { .gallery-grid { columns: 2; } }
-  @media (max-width: 480px) { .gallery-grid { columns: 1; } .gallery-header h1 { font-size: 30px; } }
+
+  .page-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1rem; }
+
+  .card {
+    background: #111111;
+    border: 0.5px solid rgba(212,175,55,0.25);
+    padding: 2.5rem 2rem;
+    width: 100%; max-width: 480px;
+  }
+
+  .card-header { text-align: center; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
+  .card-header p { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.5rem; }
+  .card-header h1 { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 300; }
+  .card-header h1 em { font-style: italic; }
+
+  .form-row { margin-bottom: 1rem; }
+  .form-row label { display: block; font-size: 12px; font-weight: 500; color: var(--text-sec); letter-spacing: 0.04em; margin-bottom: 6px; }
+  .form-row input {
+    width: 100%; padding: 10px 13px;
+    background: #0a0a0a; border: 0.5px solid rgba(212,175,55,0.3);
+    font-family: 'DM Sans', sans-serif; font-size: 16px;
+    color: #d4af37; outline: none; transition: border-color 0.2s;
+  }
+  .form-row input:focus { border-color: #d4af37; }
+
+  .amount-display {
+    background: #0a0a0a; border: 0.5px solid rgba(212,175,55,0.2);
+    padding: 1rem; margin-bottom: 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .amount-label { font-size: 13px; color: var(--text-muted); }
+  .amount-value { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: #d4af37; }
+
+  .card-field {
+    padding: 12px 13px;
+    background: #0a0a0a; border: 0.5px solid rgba(212,175,55,0.3);
+    margin-bottom: 10px;
+  }
+  .error-msg { color: #e87070; font-size: 12px; margin-bottom: 0.75rem; min-height: 18px; }
+
+  .btn-pay {
+    width: 100%; padding: 14px; background: #d4af37;
+    color: #0a0a0a; border: none;
+    font-family: 'DM Sans', sans-serif; font-size: 15px;
+    font-weight: 500; cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-pay:hover { opacity: 0.85; }
+  .btn-pay:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .secure-note { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 0.75rem; }
+
+  .success-box {
+    display: none; text-align: center; padding: 2rem;
+    border: 0.5px solid rgba(212,175,55,0.3); background: #0a0a0a;
+  }
+  .success-box.show { display: block; }
+  .success-icon { font-size: 40px; margin-bottom: 1rem; }
+  .success-box h2 { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 300; margin-bottom: 0.75rem; }
+  .success-box p { font-size: 14px; color: var(--text-muted); line-height: 1.7; }
+
+  footer { text-align: center; padding: 1.5rem; border-top: 0.5px solid var(--border); font-size: 12px; color: var(--text-muted); }
+
+  @media (max-width: 500px) { .card { padding: 1.5rem 1.25rem; } }
 </style>
 </head>
 <body>
 
 <nav>
   <a href="/index.html" class="nav-logo">MH <span>Captures/Media</span></a>
-  <a href="/index.html" class="nav-back">← Back to site</a>
 </nav>
 
-<div class="gallery-header">
-  <p>MH Captures/Media</p>
-  <h1>Photo <em>Gallery</em></h1>
+<div class="page-wrap">
+  <div class="card">
+    <div class="card-header">
+      <p>MH Captures/Media</p>
+      <h1>Pay Remaining <em>Balance</em></h1>
+    </div>
+
+    <div id="payment-form">
+      <div class="form-row">
+        <label>Your name</label>
+        <input type="text" id="client-name" placeholder="Jane Smith">
+      </div>
+      <div class="form-row">
+        <label>Your email</label>
+        <input type="email" id="client-email" placeholder="jane@example.com">
+      </div>
+      <div class="form-row">
+        <label>Amount to pay (CAD)</label>
+        <input type="number" id="balance-amount" placeholder="e.g. 57.50" min="1" step="0.01" oninput="updateAmount(this)">
+      </div>
+
+      <div class="amount-display">
+        <span class="amount-label">Total due now</span>
+        <span class="amount-value" id="display-amount">$0.00</span>
+      </div>
+
+      <div class="form-row">
+        <label>Card details</label>
+        <div class="card-field" id="stripe-card-element"></div>
+      </div>
+
+      <div class="error-msg" id="card-errors"></div>
+
+      <button class="btn-pay" id="pay-btn" onclick="payBalance(event)">
+        Pay balance
+      </button>
+      <div id="processing" style="display:none;text-align:center;font-size:13px;color:var(--text-muted);margin-top:10px;">Processing payment…</div>
+      <p class="secure-note">🔒 Secure payment powered by Stripe</p>
+    </div>
+
+    <div class="success-box" id="success-box">
+      <div class="success-icon">✓</div>
+      <h2>Payment <em>received!</em></h2>
+      <p>Thank you — your remaining balance has been paid. You will receive a receipt by email shortly. We look forward to seeing you at your session!</p>
+    </div>
+  </div>
 </div>
 
-<div class="filter-bar">
-  <button class="ftab active" onclick="showFolder('all', this)">All</button>
-  <button class="ftab" onclick="showFolder('Featured', this)">Featured</button>
-  <button class="ftab" onclick="showFolder('Portrait', this)">Portrait</button>
-  <button class="ftab" onclick="showFolder('Events', this)">Events</button>
-  <button class="ftab" onclick="showFolder('Sports', this)">Sports</button>
-</div>
-
-<div id="gallery-container">
-  <div class="loading"><div class="spinner"></div>Loading photos…</div>
-</div>
-
-<div class="lightbox" id="lightbox">
-  <button class="lightbox-close" onclick="closeLightbox()">×</button>
-  <button class="lightbox-prev" onclick="changePhoto(-1)">‹</button>
-  <img id="lightbox-img" src="" alt="">
-  <button class="lightbox-next" onclick="changePhoto(1)">›</button>
-</div>
-
-<footer>© 2026 MH Captures/Media, a Highcrest Group company.</footer>
+<footer>© 2026 MH Captures/Media, a Highcrest Group company · mhcapturesmedia.com · <a href="/policies.html" style="color:inherit;text-decoration:none;">Terms &amp; Policies</a></footer>
 
 <script>
-  const CLOUD = 'e1ncafja';
-  const FOLDERS = {
-    'Featured': [],
-    'Portrait': [],
-    'Events': [],
-    'Sports': [],
-  };
+  const STRIPE_PK = 'pk_live_51Rpx4lCkbVdZ1hSqss9b6eld9bqsUSOMnlFS3Xy3HLBG197LSIOhcqlLwxdB9XV7xpP6Ntsbvad0HRGb4VEtphrG00OLg5OV9O';
+  let stripe, cardElement;
 
-  let allPhotos = [];
-  let currentPhotos = [];
-  let currentIndex = 0;
-  let loaded = false;
-
-  // Build URL for a cloudinary image
-  function imgUrl(publicId, width) {
-    return `https://res.cloudinary.com/${CLOUD}/image/upload/q_auto,f_auto,w_${width}/${publicId}`;
+  function updateAmount(input) {
+    const val = parseFloat(input.value) || 0;
+    document.getElementById('display-amount').textContent = '$' + val.toFixed(2);
   }
 
-  async function loadAll() {
-    if (loaded) return;
-    // Use the folder listing endpoint with a tag-based approach
-    // We'll try each folder using the upload API list endpoint
-    const folderNames = ['Featured', 'Portrait', 'Events', 'Sports'];
-
-    for (const folder of folderNames) {
-      try {
-        const res = await fetch(
-          `https://res.cloudinary.com/${CLOUD}/image/list/${folder}.json`,
-          { headers: { 'Accept': 'application/json' } }
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const photos = (data.resources || []).map(r => ({
-            id: r.public_id,
-            folder,
-            thumb: imgUrl(r.public_id, 600),
-            full: imgUrl(r.public_id, 1400),
-          }));
-          FOLDERS[folder] = photos;
-          // a photo with two tags (e.g. Featured + Portrait) should appear only once in "All"
-          const seen = new Set(allPhotos.map(p => p.id));
-          allPhotos = [...allPhotos, ...photos.filter(p => !seen.has(p.id))];
-        }
-      } catch(e) {
-        console.log('Folder error:', folder, e);
+  window.addEventListener('DOMContentLoaded', () => {
+    stripe = Stripe(STRIPE_PK);
+    const elements = stripe.elements();
+    cardElement = elements.create('card', {
+      style: {
+        base: { color: '#d4af37', fontFamily: '"DM Sans", sans-serif', fontSize: '15px', '::placeholder': { color: '#6b5c1a' } },
+        invalid: { color: '#e87070' }
       }
-    }
-    loaded = true;
-  }
-
-  async function showFolder(filter, btn) {
-    document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-
-    const container = document.getElementById('gallery-container');
-    container.innerHTML = '<div class="loading"><div class="spinner"></div>Loading photos…</div>';
-
-    await loadAll();
-
-    currentPhotos = filter === 'all' ? allPhotos : FOLDERS[filter] || [];
-
-    if (currentPhotos.length === 0) {
-      container.innerHTML = '<div class="empty">No photos in this category yet.<br><br>Make sure photos are uploaded to Cloudinary and tags are enabled.</div>';
-      return;
-    }
-
-    const grid = document.createElement('div');
-    grid.className = 'gallery-grid';
-    currentPhotos.forEach((photo, i) => {
-      const item = document.createElement('div');
-      item.className = 'gallery-item';
-      item.innerHTML = `<img src="${photo.thumb}" alt="MH Captures/Media" loading="lazy">`;
-      item.onclick = () => openLightbox(i);
-      grid.appendChild(item);
     });
-    container.innerHTML = '';
-    container.appendChild(grid);
-  }
+    cardElement.mount('#stripe-card-element');
+    cardElement.on('change', e => {
+      document.getElementById('card-errors').textContent = e.error ? e.error.message : '';
+    });
 
-  function openLightbox(i) {
-    currentIndex = i;
-    document.getElementById('lightbox-img').src = currentPhotos[i].full;
-    document.getElementById('lightbox').classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closeLightbox() {
-    document.getElementById('lightbox').classList.remove('show');
-    document.body.style.overflow = '';
-  }
-
-  function changePhoto(dir) {
-    currentIndex = (currentIndex + dir + currentPhotos.length) % currentPhotos.length;
-    document.getElementById('lightbox-img').src = currentPhotos[currentIndex].full;
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeLightbox();
-    if (e.key === 'ArrowRight') changePhoto(1);
-    if (e.key === 'ArrowLeft') changePhoto(-1);
+    // Pre-fill amount from URL param if provided
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('amount')) {
+      const amt = parseFloat(params.get('amount'));
+      document.getElementById('balance-amount').value = amt.toFixed(2);
+      document.getElementById('display-amount').textContent = '$' + amt.toFixed(2);
+    }
+    if (params.get('name')) document.getElementById('client-name').value = params.get('name');
+    if (params.get('email')) document.getElementById('client-email').value = params.get('email');
   });
 
-  document.getElementById('lightbox').addEventListener('click', e => {
-    if (e.target === document.getElementById('lightbox')) closeLightbox();
-  });
+  async function payBalance(e) {
+    e.preventDefault();
+    const name = document.getElementById('client-name').value.trim();
+    const email = document.getElementById('client-email').value.trim();
+    const amount = parseFloat(document.getElementById('balance-amount').value);
+    const errDiv = document.getElementById('card-errors');
+    const btn = document.getElementById('pay-btn');
+    const proc = document.getElementById('processing');
 
-  // Load on start
-  showFolder('all', document.querySelector('.ftab'));
+    errDiv.textContent = '';
+
+    if (!name) { errDiv.textContent = 'Please enter your name.'; return; }
+    if (!email || !email.includes('@')) { errDiv.textContent = 'Please enter a valid email.'; return; }
+    if (!amount || amount < 1) { errDiv.textContent = 'Please enter a valid amount.'; return; }
+
+    btn.disabled = true;
+    proc.style.display = 'block';
+
+    try {
+      const res = await fetch('/.netlify/functions/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: Math.round(amount * 100),
+          session: 'Remaining balance',
+          name, email,
+          referredBy: '',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Server error');
+      if (!data.clientSecret) throw new Error('No client secret returned.');
+
+      const result = await stripe.confirmCardPayment(data.clientSecret, {
+        payment_method: { card: cardElement, billing_details: { name, email } }
+      });
+
+      if (result.error) throw new Error(result.error.message);
+
+      if (result.paymentIntent?.status === 'succeeded') {
+        document.getElementById('payment-form').style.display = 'none';
+        document.getElementById('success-box').classList.add('show');
+      }
+    } catch (err) {
+      errDiv.textContent = err.message || 'Payment failed. Please try again.';
+    } finally {
+      btn.disabled = false;
+      proc.style.display = 'none';
+    }
+  }
 </script>
 </body>
 </html>
